@@ -1,0 +1,67 @@
+/* Panel specific styling */
+
+/* Reality band grid will be filled by JS, but set baseline look */
+.panel-reality .panel-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+}
+
+/* Log panel */
+.panel-log .panel-inner {
+  font-size: 0.72rem;
+  line-height: 1.3;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.log-entries {
+  flex: 1;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column-reverse; /* newest at bottom visually */
+}
+
+.log-entry {
+  opacity: 0.86;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 0.05rem 0;
+  color: color-mix(in srgb, var(--clr-soft) 80%, #7effc1 20%);
+}
+
+.log-entry.is-new {
+  color: var(--clr-accent);
+}
+
+.log-entry:hover {
+  opacity: 1;
+  color: var(--clr-base);
+}
+
+/* About and sources overlays */
+.panel-overlay-about {
+  font-size: 0.7rem;
+  padding: 0.5rem;
+  background: radial-gradient(circle at top, rgba(0, 0, 0, 0.75) 0, rgba(0, 0, 0, 0.95) 60%);
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--clr-accent) 30%, transparent);
+  color: var(--clr-soft);
+}
+
+.panel-overlay-sources {
+  font-size: 0.65rem;
+  padding: 0.4rem;
+  background: radial-gradient(circle at bottom, rgba(0, 0, 0, 0.85) 0, rgba(0, 0, 0, 0.98) 60%);
+  border-radius: 6px;
+  border: 1px dashed color-mix(in srgb, var(--clr-dim) 40%, transparent);
+  color: color-mix(in srgb, var(--clr-soft) 70%, #9ad5ff 30%);
+}
+
+/* Overlay visible state, toggled by JS */
+.panel-overlay-visible {
+  opacity: 1;
+}
