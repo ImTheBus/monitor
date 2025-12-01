@@ -1,5 +1,5 @@
 // /monitor/assets/js/panels/panel-orbitalBand.js
-// Orbital band: central radar + side console of anomaly tiles, lights and meters.
+// Orbital band: central radar + rich console, corner readouts and radar effects.
 
 export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   const root = document.getElementById("panel-orbit");
@@ -8,11 +8,19 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   const inner = root.querySelector(".panel-inner");
   inner.innerHTML = "";
 
-  // --- Central radar -------------------------------------------------------
+  // --- Central radar shell -------------------------------------------------
 
   const radar = document.createElement("div");
   radar.classList.add("orbit-radar");
   inner.appendChild(radar);
+
+  const radarFrame = document.createElement("div");
+  radarFrame.classList.add("orbit-radar-frame");
+  radar.appendChild(radarFrame);
+
+  const radarRipple = document.createElement("div");
+  radarRipple.classList.add("orbit-radar-ripple");
+  radar.appendChild(radarRipple);
 
   const sweep = document.createElement("div");
   sweep.classList.add("orbit-sweep");
@@ -22,11 +30,53 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   object.classList.add("orbit-object");
   radar.appendChild(object);
 
-  // --- Footline telemetry --------------------------------------------------
+  // Radar dots (static flickering points, used for sweep interaction)
+  const dotCount = 6;
+  const dots = [];
+  for (let i = 0; i < dotCount; i++) {
+    const el = document.createElement("div");
+    el.classList.add("orbit-dot");
+    radar.appendChild(el);
+
+    dots.push({
+      el,
+      angleDeg: Math.random() * 360,
+      radius: 18 + Math.random() * 22,
+      phase: Math.random() * Math.PI * 2,
+      lastHit: 0
+    });
+  }
+
+  // --- Footline telemetry (bottom-left) ------------------------------------
 
   const info = document.createElement("div");
   info.classList.add("orbit-info");
   inner.appendChild(info);
+
+  // --- Corner readouts -----------------------------------------------------
+
+  function createCorner(posClass, label, valueText) {
+    const wrap = document.createElement("div");
+    wrap.classList.add("orbit-corner", posClass);
+
+    const labelEl = document.createElement("span");
+    labelEl.classList.add("orbit-corner-label");
+    labelEl.textContent = label;
+
+    const valueEl = document.createElement("span");
+    valueEl.classList.add("orbit-corner-value");
+    valueEl.textContent = valueText;
+
+    wrap.appendChild(labelEl);
+    wrap.appendChild(valueEl);
+    inner.appendChild(wrap);
+    return { wrap, valueEl };
+  }
+
+  const cornerTL = createCorner("orbit-corner-tl", "REGIME", "LEO");
+  const cornerTR = createCorner("orbit-corner-tr", "OBJECT", "A");
+  const cornerBR = createCorner("orbit-corner-br", "LOCAL RANGE", "-- KM");
+  // Bottom-left is effectively covered by orbit-info
 
   // --- Side console wrapper -----------------------------------------------
 
@@ -34,7 +84,7 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   consoleEl.classList.add("orbit-console");
   inner.appendChild(consoleEl);
 
-  // 1) Indicator lights row (top)
+  // 1) Indicator lights row (top of console)
   const lightsRow = document.createElement("div");
   lightsRow.classList.add("orbit-lights-row");
   consoleEl.appendChild(lightsRow);
@@ -56,7 +106,7 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     lightsRow.appendChild(light);
   });
 
-  // 2) Anomaly tiles grid (middle)
+  // 2) Anomaly tiles grid (middle of console)
   const tilesGrid = document.createElement("div");
   tilesGrid.classList.add("orbit-tiles-grid");
   consoleEl.appendChild(tilesGrid);
@@ -102,7 +152,7 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     tileRef.tile.dataset.level = level || "low";
   }
 
-  // 3) Meters row (bottom)
+  // 3) Meters row (bottom of console)
   const metersRow = document.createElement("div");
   metersRow.classList.add("orbit-meters-row");
   consoleEl.appendChild(metersRow);
@@ -130,7 +180,6 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     return { meter, fill };
   }
 
-  // For now these are mostly decorative; we can wire the fills later
   const meters = {
     stability: createMeter("STABILITY", 0.7),
     coverage: createMeter("COVERAGE", 0.5),
@@ -175,16 +224,27 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     return R * c;
   }
 
+  function angleDiff(a, b) {
+    let d = Math.abs(a - b) % 360;
+    if (d > 180) d = 360 - d;
+    return d;
+  }
+
   eventBus.subscribe("data:iss:update", (payload) => {
     if (!payload) return;
 
     const now = performance.now();
     const { altitude, velocity, latitude, longitude } = payload;
 
-    // Telemetry line
+    // Telemetry line (bottom-left)
     const alt = altitude.toFixed(1);
     const vel = velocity.toFixed(0);
     info.textContent = `OBJECT A: ALT ${alt} KM | VEL ${vel} KM/H`;
+
+    // Update corner readouts
+    cornerTR.valueEl.textContent = "A / 25544";
+    const distLocal = distanceKm(latitude, longitude, LOCAL_LAT, LOCAL_LON);
+    cornerBR.valueEl.textContent = `${Math.round(distLocal)} KM`;
 
     // Derive simple anomaly-ish metrics
     let dAlt = 0;
@@ -199,8 +259,6 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
 
     lastIss = payload;
     lastIssTime = now;
-
-    const distLocal = distanceKm(latitude, longitude, LOCAL_LAT, LOCAL_LON);
 
     // TRACK tile: based on recency of data
     const ageSec = dt || 0;
@@ -245,8 +303,7 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     }
     updateTile(tiles.motion, motionText, motionLevel);
 
-    // Very light touch on meters for now, just to show some motion.
-    // We can replace this with real mapping later.
+    // Light-touch mapping for meters
     meters.stability.fill.style.setProperty(
       "--fill",
       String(Math.max(0.3, Math.min(0.9, 0.8 - motionScore * 0.2)))
@@ -263,14 +320,18 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
 
   // --- Animation loop for radar -------------------------------------------
 
+  let lastHitTime = 0;
+
   scheduler.registerAnimation((ts) => {
     const t = ts / 1000;
     const baseSpeed = 12;
     const speedBoost = Math.min(mouseSpeed * 400, 40);
     const angle = (t * (baseSpeed + speedBoost)) % 360;
 
+    // Sweep rotation
     sweep.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
 
+    // Object orbit path
     const altNorm = lastIss
       ? Math.max(0, Math.min(lastIss.altitude / 600, 1))
       : 0.7;
@@ -283,6 +344,55 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     object.style.left = `${x}%`;
     object.style.top = `${y}%`;
 
+    // Dots: flicker and position
+    let anyHit = false;
+    const hitThreshold = 3; // degrees
+
+    dots.forEach((d) => {
+      const aRad = (d.angleDeg * Math.PI) / 180;
+      const dx = 50 + d.radius * Math.cos(aRad);
+      const dy = 50 + d.radius * Math.sin(aRad);
+
+      d.el.style.left = `${dx}%`;
+      d.el.style.top = `${dy}%`;
+
+      const flicker = 0.3 + 0.6 * (0.5 + 0.5 * Math.sin(t * 2.3 + d.phase));
+      d.el.style.opacity = flicker.toFixed(2);
+
+      // Intersection with sweep
+      const diff = angleDiff(angle, d.angleDeg);
+      if (diff < hitThreshold) {
+        anyHit = true;
+        d.lastHit = ts;
+      }
+
+      if (ts - d.lastHit < 250) {
+        d.el.classList.add("orbit-dot-hit");
+      } else {
+        d.el.classList.remove("orbit-dot-hit");
+      }
+
+      // Occasionally retune dot position very slightly
+      if (Math.random() < 0.0008) {
+        d.angleDeg = (d.angleDeg + (Math.random() * 40 - 20) + 360) % 360;
+        d.radius = 18 + Math.random() * 22;
+      }
+    });
+
+    if (anyHit) {
+      lastHitTime = ts;
+    }
+
+    // Sweep flash + center ripple when hitting a dot
+    if (ts - lastHitTime < 220) {
+      sweep.classList.add("orbit-sweep-hit");
+      radarRipple.classList.add("orbit-radar-ripple-active");
+    } else {
+      sweep.classList.remove("orbit-sweep-hit");
+      radarRipple.classList.remove("orbit-radar-ripple-active");
+    }
+
+    // Radar color by mode
     let color = "var(--clr-accent)";
     if (mode === "STORM") color = "var(--clr-danger)";
     if (mode === "OTHER") color = "var(--clr-base)";
