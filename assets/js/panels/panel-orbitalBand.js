@@ -1,5 +1,5 @@
 // /monitor/assets/js/panels/panel-orbitalBand.js
-// Orbital band: central radar + rich console, corner readouts and radar effects.
+// Orbital band: central radar + rich console, meters, corner readouts and radar effects.
 
 export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   const root = document.getElementById("panel-orbit");
@@ -47,11 +47,24 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     });
   }
 
-  // --- Footline telemetry (bottom-left) ------------------------------------
+  // --- Footline telemetry block (bottom-left) ------------------------------
 
   const info = document.createElement("div");
   info.classList.add("orbit-info");
   inner.appendChild(info);
+
+  const infoPrimary = document.createElement("div");
+  infoPrimary.classList.add("orbit-info-line", "orbit-info-primary");
+  info.appendChild(infoPrimary);
+
+  const infoExtras = [];
+  for (let i = 0; i < 6; i++) {
+    const line = document.createElement("div");
+    line.classList.add("orbit-info-line");
+    line.textContent = "--";
+    info.appendChild(line);
+    infoExtras.push({ el: line, phase: Math.random() * Math.PI * 2 });
+  }
 
   // --- Corner readouts -----------------------------------------------------
 
@@ -76,15 +89,59 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   const cornerTL = createCorner("orbit-corner-tl", "REGIME", "LEO");
   const cornerTR = createCorner("orbit-corner-tr", "OBJECT", "A");
   const cornerBR = createCorner("orbit-corner-br", "LOCAL RANGE", "-- KM");
-  // Bottom-left is effectively covered by orbit-info
+  // bottom-left visually covered by info block
 
-  // --- Side console wrapper -----------------------------------------------
+  // --- Meters block (top-left, under corner TL) ----------------------------
+
+  const metersBlock = document.createElement("div");
+  metersBlock.classList.add("orbit-meters-block");
+  inner.appendChild(metersBlock);
+
+  function createMeter(labelText, initial) {
+    const meter = document.createElement("div");
+    meter.classList.add("orbit-meter");
+
+    const label = document.createElement("div");
+    label.classList.add("orbit-meter-label");
+    label.textContent = labelText;
+    meter.appendChild(label);
+
+    const bar = document.createElement("div");
+    bar.classList.add("orbit-meter-bar");
+    meter.appendChild(bar);
+
+    const fill = document.createElement("div");
+    fill.classList.add("orbit-meter-fill");
+    bar.appendChild(fill);
+
+    metersBlock.appendChild(meter);
+
+    const value = Math.max(0, Math.min(initial, 1));
+    fill.style.setProperty("--fill", String(value));
+
+    return { meter, fill, value, target: value };
+  }
+
+  const meters = {
+    stability: createMeter("STABILITY", 0.7),
+    coverage: createMeter("COVERAGE", 0.5),
+    latency: createMeter("LATENCY", 0.3),
+    noise: createMeter("NOISE", 0.2),
+    integrity: createMeter("INTEGRITY", 0.8)
+  };
+
+  function setMeterTarget(meterObj, target) {
+    const v = Math.max(0, Math.min(target, 1));
+    meterObj.target = v;
+  }
+
+  // --- Side console wrapper (top-right) ------------------------------------
 
   const consoleEl = document.createElement("div");
   consoleEl.classList.add("orbit-console");
   inner.appendChild(consoleEl);
 
-  // 1) Indicator lights row (top of console)
+  // 1) Indicator lights row
   const lightsRow = document.createElement("div");
   lightsRow.classList.add("orbit-lights-row");
   consoleEl.appendChild(lightsRow);
@@ -106,7 +163,7 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     lightsRow.appendChild(light);
   });
 
-  // 2) Anomaly tiles grid (middle of console)
+  // 2) Anomaly tiles grid
   const tilesGrid = document.createElement("div");
   tilesGrid.classList.add("orbit-tiles-grid");
   consoleEl.appendChild(tilesGrid);
@@ -152,39 +209,28 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     tileRef.tile.dataset.level = level || "low";
   }
 
-  // 3) Meters row (bottom of console)
-  const metersRow = document.createElement("div");
-  metersRow.classList.add("orbit-meters-row");
-  consoleEl.appendChild(metersRow);
+  // --- Bottom-right alert grid ---------------------------------------------
 
-  function createMeter(labelText, fillFraction) {
-    const meter = document.createElement("div");
-    meter.classList.add("orbit-meter");
+  const alertGrid = document.createElement("div");
+  alertGrid.classList.add("orbit-alert-grid");
+  inner.appendChild(alertGrid);
 
-    const label = document.createElement("div");
-    label.classList.add("orbit-meter-label");
-    label.textContent = labelText;
-    meter.appendChild(label);
+  const alertCells = [];
+  const alertCols = 6;
+  const alertRows = 4;
 
-    const bar = document.createElement("div");
-    bar.classList.add("orbit-meter-bar");
-    meter.appendChild(bar);
-
-    const fill = document.createElement("div");
-    fill.classList.add("orbit-meter-fill");
-    fill.style.setProperty("--fill", String(Math.max(0, Math.min(fillFraction, 1))));
-    bar.appendChild(fill);
-
-    metersRow.appendChild(meter);
-
-    return { meter, fill };
+  for (let r = 0; r < alertRows; r++) {
+    for (let c = 0; c < alertCols; c++) {
+      const cell = document.createElement("div");
+      cell.classList.add("orbit-alert-cell");
+      alertGrid.appendChild(cell);
+      alertCells.push({
+        el: cell,
+        phase: Math.random() * Math.PI * 2,
+        lastHot: 0
+      });
+    }
   }
-
-  const meters = {
-    stability: createMeter("STABILITY", 0.7),
-    coverage: createMeter("COVERAGE", 0.5),
-    latency: createMeter("LATENCY", 0.3)
-  };
 
   // --- State & data --------------------------------------------------------
 
@@ -236,14 +282,14 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     const now = performance.now();
     const { altitude, velocity, latitude, longitude } = payload;
 
-    // Telemetry line (bottom-left)
     const alt = altitude.toFixed(1);
     const vel = velocity.toFixed(0);
-    info.textContent = `OBJECT A: ALT ${alt} KM | VEL ${vel} KM/H`;
 
-    // Update corner readouts
-    cornerTR.valueEl.textContent = "A / 25544";
+    // Primary info line
+    infoPrimary.textContent = `OBJECT A: ALT ${alt} KM | VEL ${vel} KM/H`;
+
     const distLocal = distanceKm(latitude, longitude, LOCAL_LAT, LOCAL_LON);
+    cornerTR.valueEl.textContent = "A / 25544";
     cornerBR.valueEl.textContent = `${Math.round(distLocal)} KM`;
 
     // Derive simple anomaly-ish metrics
@@ -260,13 +306,13 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     lastIss = payload;
     lastIssTime = now;
 
-    // TRACK tile: based on recency of data
     const ageSec = dt || 0;
+
+    // Tiles
     const trackLevel = ageSec < 20 ? "ok" : ageSec < 60 ? "warn" : "low";
     const trackText = ageSec < 20 ? "LOCKED" : ageSec < 60 ? "DRIFT" : "OBSCURED";
     updateTile(tiles.track, trackText, trackLevel);
 
-    // PASS WINDOW tile: how close to local point
     let passText = "IDLE";
     let passLevel = "low";
     if (distLocal < 800) {
@@ -278,7 +324,6 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     }
     updateTile(tiles.pass, passText, passLevel);
 
-    // DRAG tile: simple heuristic from altitude
     let dragText = "LOW";
     let dragLevel = "ok";
     if (altitude < 410) {
@@ -290,7 +335,6 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     }
     updateTile(tiles.drag, dragText, dragLevel);
 
-    // MOTION tile: mix of change in alt/vel over time
     const motionScore = dt > 0 ? (dAlt + dVel / 200) / dt : 0;
     let motionText = "STEADY";
     let motionLevel = "low";
@@ -303,22 +347,59 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     }
     updateTile(tiles.motion, motionText, motionLevel);
 
-    // Light-touch mapping for meters
-    meters.stability.fill.style.setProperty(
-      "--fill",
-      String(Math.max(0.3, Math.min(0.9, 0.8 - motionScore * 0.2)))
+    // Meter targets (slow, not too energetic)
+    const dragIndex = Math.max(0, Math.min((420 - altitude) / 20, 1));
+
+    setMeterTarget(
+      meters.stability,
+      Math.max(0.2, 0.85 - motionScore * 0.25 - dragIndex * 0.2)
     );
-    meters.coverage.fill.style.setProperty(
-      "--fill",
-      String(Math.max(0.2, Math.min(1, 1 - distLocal / 5000)))
+    setMeterTarget(
+      meters.coverage,
+      Math.max(0.1, Math.min(1, 1 - distLocal / 5000))
     );
-    meters.latency.fill.style.setProperty(
-      "--fill",
-      String(Math.max(0.1, Math.min(0.9, ageSec / 40)))
+    setMeterTarget(meters.latency, Math.max(0.05, Math.min(0.95, ageSec / 40)));
+
+    // noise: mouse activity plus a little motion
+    const noiseLevel = Math.max(
+      0.05,
+      Math.min(1, 0.15 + mouseSpeed * 3 + motionScore * 0.1)
     );
+    setMeterTarget(meters.noise, noiseLevel);
+
+    // integrity: inverse of latency + drag + noise
+    const integrityBase = 0.9 - meters.latency.target * 0.4 - dragIndex * 0.2;
+    setMeterTarget(meters.integrity, Math.max(0.1, Math.min(1, integrityBase)));
+
+    // Extra info lines: slowly changing, text-focused
+    const apogee = (altitude + 6.5).toFixed(1);
+    const perigee = (altitude - 6.5).toFixed(1);
+    const periodMin = (92 + dragIndex * 4).toFixed(1);
+    const visCode = distLocal < 1000 ? "LOCAL" : distLocal < 3000 ? "REGION" : "HORIZON";
+
+    const lines = [
+      `APOGEE ${apogee} KM | PERIGEE ${perigee} KM`,
+      `RANGE ${Math.round(distLocal)} KM | VIS ${visCode}`,
+      `ORBIT PERIOD ${periodMin} MIN`,
+      `NODE ROUGVIE | MODE ${mode}`,
+      `DRAG INDEX ${(dragIndex * 1.7).toFixed(2)}`,
+      `NOISE ${Math.round(noiseLevel * 100)
+        .toString()
+        .padStart(2, "0")}%`
+    ];
+
+    infoExtras.forEach((obj, idx) => {
+      obj.el.textContent = lines[idx] || "--";
+    });
+
+    // Regime label small change with altitude
+    let regime = "LEO";
+    if (altitude > 2000) regime = "MEO";
+    if (altitude > 35000) regime = "GEO";
+    cornerTL.valueEl.textContent = regime;
   });
 
-  // --- Animation loop for radar -------------------------------------------
+  // --- Animation loop for radar, meters, alerts and flashing text ----------
 
   let lastHitTime = 0;
 
@@ -344,7 +425,7 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     object.style.left = `${x}%`;
     object.style.top = `${y}%`;
 
-    // Dots: flicker and position
+    // Dots: flicker and position; sweep interaction detection
     let anyHit = false;
     const hitThreshold = 3; // degrees
 
@@ -359,7 +440,6 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
       const flicker = 0.3 + 0.6 * (0.5 + 0.5 * Math.sin(t * 2.3 + d.phase));
       d.el.style.opacity = flicker.toFixed(2);
 
-      // Intersection with sweep
       const diff = angleDiff(angle, d.angleDeg);
       if (diff < hitThreshold) {
         anyHit = true;
@@ -372,7 +452,6 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
         d.el.classList.remove("orbit-dot-hit");
       }
 
-      // Occasionally retune dot position very slightly
       if (Math.random() < 0.0008) {
         d.angleDeg = (d.angleDeg + (Math.random() * 40 - 20) + 360) % 360;
         d.radius = 18 + Math.random() * 22;
@@ -396,7 +475,51 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     let color = "var(--clr-accent)";
     if (mode === "STORM") color = "var(--clr-danger)";
     if (mode === "OTHER") color = "var(--clr-base)";
-
     radar.style.boxShadow = `0 0 18px color-mix(in srgb, ${color} 30%, transparent)`;
+
+    // Meters: ease towards target + colour levels
+    Object.values(meters).forEach((m) => {
+      const lerpFactor = 0.05; // gentle motion
+      m.value += (m.target - m.value) * lerpFactor;
+      const val = Math.max(0, Math.min(m.value, 1));
+      m.fill.style.setProperty("--fill", val.toFixed(3));
+
+      let level = "mid";
+      if (val > 0.78) level = "high";
+      else if (val < 0.22) level = "low";
+      m.meter.dataset.level = level;
+    });
+
+    // Alert grid: dim flash everywhere, random bright red flashes
+    const hitBoost = ts - lastHitTime < 400;
+    alertCells.forEach((cell) => {
+      const flicker =
+        0.25 + 0.25 * (0.5 + 0.5 * Math.sin(t * 3 + cell.phase));
+      cell.el.style.opacity = flicker.toFixed(2);
+
+      const hotChance = hitBoost ? 0.02 : 0.004;
+      if (Math.random() < hotChance) {
+        cell.lastHot = ts;
+      }
+
+      if (ts - cell.lastHot < 220) {
+        cell.el.classList.add("orbit-alert-hot");
+      } else {
+        cell.el.classList.remove("orbit-alert-hot");
+      }
+    });
+
+    // Info extra lines: subtle colour flashes based on radar activity
+    const dtHit = ts - lastHitTime;
+    infoExtras.forEach((obj, idx) => {
+      const el = obj.el;
+      el.classList.remove("orbit-info-hot", "orbit-info-cold");
+
+      if (dtHit < 350 && idx % 2 === 0) {
+        el.classList.add("orbit-info-hot"); // red/white pulse
+      } else if (dtHit < 1600 && idx % 3 === 0) {
+        el.classList.add("orbit-info-cold"); // blue-ish
+      }
+    });
   });
 }
