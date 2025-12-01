@@ -1,6 +1,6 @@
 /* /monitor/assets/css/monitor-panels.css */
 
-/* Reality band grid will be filled by JS, but set baseline look */
+/* Reality band grid */
 .panel-reality .panel-inner {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -80,6 +80,17 @@
   background: radial-gradient(circle, var(--clr-accent) 0, #000 90%);
   box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 80%, transparent);
   transform: translate(-50%, -50%);
+}
+
+.orbit-info {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.5rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--clr-soft) 70%, #7df0ff 30%);
+  opacity: 0.85;
 }
 
 /* Substrate band - vertical bars */
