@@ -139,16 +139,18 @@
 .panel-log .panel-inner {
   font-size: 0.72rem;
   line-height: 1.3;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .log-entries {
   flex: 1;
-  overflow-y: hidden;
+  min-height: 0;
+  overflow-y: auto;
   display: flex;
-  flex-direction: column-reverse; /* newest at bottom visually */
+  flex-direction: column; /* oldest at top, newest at bottom */
 }
 
 .log-entry {
