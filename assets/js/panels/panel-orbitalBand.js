@@ -1,5 +1,5 @@
 // /monitor/assets/js/panels/panel-orbitalBand.js
-// Orbital band: central radar + side console of anomaly tiles
+// Orbital band: central radar + side console of anomaly tiles, lights and meters.
 
 export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   const root = document.getElementById("panel-orbit");
@@ -28,11 +28,38 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   info.classList.add("orbit-info");
   inner.appendChild(info);
 
-  // --- Side console: anomaly tiles ----------------------------------------
+  // --- Side console wrapper -----------------------------------------------
 
   const consoleEl = document.createElement("div");
   consoleEl.classList.add("orbit-console");
   inner.appendChild(consoleEl);
+
+  // 1) Indicator lights row (top)
+  const lightsRow = document.createElement("div");
+  lightsRow.classList.add("orbit-lights-row");
+  consoleEl.appendChild(lightsRow);
+
+  const lightLabels = ["LINK", "SYNC", "ALT", "VEC", "GATE", "OTHER"];
+  lightLabels.forEach((label) => {
+    const light = document.createElement("div");
+    light.classList.add("orbit-light");
+
+    const led = document.createElement("div");
+    led.classList.add("orbit-light-led");
+    light.appendChild(led);
+
+    const text = document.createElement("div");
+    text.classList.add("orbit-light-label");
+    text.textContent = label;
+    light.appendChild(text);
+
+    lightsRow.appendChild(light);
+  });
+
+  // 2) Anomaly tiles grid (middle)
+  const tilesGrid = document.createElement("div");
+  tilesGrid.classList.add("orbit-tiles-grid");
+  consoleEl.appendChild(tilesGrid);
 
   function createTile(key, labelText) {
     const tile = document.createElement("div");
@@ -57,7 +84,7 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     value.textContent = "--";
     body.appendChild(value);
 
-    consoleEl.appendChild(tile);
+    tilesGrid.appendChild(tile);
 
     return { tile, value, iconWrap };
   }
@@ -74,6 +101,41 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     tileRef.value.textContent = text;
     tileRef.tile.dataset.level = level || "low";
   }
+
+  // 3) Meters row (bottom)
+  const metersRow = document.createElement("div");
+  metersRow.classList.add("orbit-meters-row");
+  consoleEl.appendChild(metersRow);
+
+  function createMeter(labelText, fillFraction) {
+    const meter = document.createElement("div");
+    meter.classList.add("orbit-meter");
+
+    const label = document.createElement("div");
+    label.classList.add("orbit-meter-label");
+    label.textContent = labelText;
+    meter.appendChild(label);
+
+    const bar = document.createElement("div");
+    bar.classList.add("orbit-meter-bar");
+    meter.appendChild(bar);
+
+    const fill = document.createElement("div");
+    fill.classList.add("orbit-meter-fill");
+    fill.style.setProperty("--fill", String(Math.max(0, Math.min(fillFraction, 1))));
+    bar.appendChild(fill);
+
+    metersRow.appendChild(meter);
+
+    return { meter, fill };
+  }
+
+  // For now these are mostly decorative; we can wire the fills later
+  const meters = {
+    stability: createMeter("STABILITY", 0.7),
+    coverage: createMeter("COVERAGE", 0.5),
+    latency: createMeter("LATENCY", 0.3)
+  };
 
   // --- State & data --------------------------------------------------------
 
@@ -182,6 +244,21 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
       motionLevel = "warn";
     }
     updateTile(tiles.motion, motionText, motionLevel);
+
+    // Very light touch on meters for now, just to show some motion.
+    // We can replace this with real mapping later.
+    meters.stability.fill.style.setProperty(
+      "--fill",
+      String(Math.max(0.3, Math.min(0.9, 0.8 - motionScore * 0.2)))
+    );
+    meters.coverage.fill.style.setProperty(
+      "--fill",
+      String(Math.max(0.2, Math.min(1, 1 - distLocal / 5000)))
+    );
+    meters.latency.fill.style.setProperty(
+      "--fill",
+      String(Math.max(0.1, Math.min(0.9, ageSec / 40)))
+    );
   });
 
   // --- Animation loop for radar -------------------------------------------
