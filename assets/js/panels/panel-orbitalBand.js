@@ -1,10 +1,14 @@
 // /monitor/assets/js/panels/panel-orbitalBand.js
+// Orbital band: central radar + side console of anomaly tiles
+
 export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   const root = document.getElementById("panel-orbit");
   if (!root) return;
 
   const inner = root.querySelector(".panel-inner");
   inner.innerHTML = "";
+
+  // --- Central radar -------------------------------------------------------
 
   const radar = document.createElement("div");
   radar.classList.add("orbit-radar");
@@ -18,13 +22,66 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
   object.classList.add("orbit-object");
   radar.appendChild(object);
 
+  // --- Footline telemetry --------------------------------------------------
+
   const info = document.createElement("div");
   info.classList.add("orbit-info");
   inner.appendChild(info);
 
+  // --- Side console: anomaly tiles ----------------------------------------
+
+  const consoleEl = document.createElement("div");
+  consoleEl.classList.add("orbit-console");
+  inner.appendChild(consoleEl);
+
+  function createTile(key, labelText) {
+    const tile = document.createElement("div");
+    tile.classList.add("orbit-tile");
+    tile.dataset.level = "low";
+
+    const header = document.createElement("div");
+    header.classList.add("orbit-tile-header");
+    header.textContent = labelText;
+    tile.appendChild(header);
+
+    const body = document.createElement("div");
+    body.classList.add("orbit-tile-body");
+    tile.appendChild(body);
+
+    const iconWrap = document.createElement("div");
+    iconWrap.classList.add("orbit-icon");
+    body.appendChild(iconWrap);
+
+    const value = document.createElement("div");
+    value.classList.add("orbit-tile-value");
+    value.textContent = "--";
+    body.appendChild(value);
+
+    consoleEl.appendChild(tile);
+
+    return { tile, value, iconWrap };
+  }
+
+  const tiles = {
+    track: createTile("track", "TRACK"),
+    pass: createTile("pass", "PASS WINDOW"),
+    drag: createTile("drag", "DRAG"),
+    motion: createTile("motion", "MOTION")
+  };
+
+  function updateTile(tileRef, text, level) {
+    if (!tileRef) return;
+    tileRef.value.textContent = text;
+    tileRef.tile.dataset.level = level || "low";
+  }
+
+  // --- State & data --------------------------------------------------------
+
   let mouseSpeed = 0;
   let mode = "CALM";
-  let lastIss = { altitude: 0, velocity: 0 };
+
+  let lastIss = null;
+  let lastIssTime = null;
 
   eventBus.subscribe("mouse:move", ({ speed }) => {
     mouseSpeed = speed;
@@ -34,13 +91,100 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
     mode = state.mode || "CALM";
   });
 
+  // rough position for Edinburgh for "local" pass logic
+  const LOCAL_LAT = 55.95;
+  const LOCAL_LON = -3.2;
+
+  function toRad(v) {
+    return (v * Math.PI) / 180;
+  }
+
+  function distanceKm(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
   eventBus.subscribe("data:iss:update", (payload) => {
     if (!payload) return;
+
+    const now = performance.now();
+    const { altitude, velocity, latitude, longitude } = payload;
+
+    // Telemetry line
+    const alt = altitude.toFixed(1);
+    const vel = velocity.toFixed(0);
+    info.textContent = `OBJECT A: ALT ${alt} KM | VEL ${vel} KM/H`;
+
+    // Derive simple anomaly-ish metrics
+    let dAlt = 0;
+    let dVel = 0;
+    let dt = 0;
+
+    if (lastIss && lastIssTime != null) {
+      dAlt = Math.abs(altitude - lastIss.altitude);
+      dVel = Math.abs(velocity - lastIss.velocity);
+      dt = (now - lastIssTime) / 1000; // seconds
+    }
+
     lastIss = payload;
-    const alt = payload.altitude.toFixed(1);
-    const vel = payload.velocity.toFixed(0);
-    info.textContent = `OBJECT A: alt ${alt} km | vel ${vel} km/h`;
+    lastIssTime = now;
+
+    const distLocal = distanceKm(latitude, longitude, LOCAL_LAT, LOCAL_LON);
+
+    // TRACK tile: based on recency of data
+    const ageSec = dt || 0;
+    const trackLevel = ageSec < 20 ? "ok" : ageSec < 60 ? "warn" : "low";
+    const trackText = ageSec < 20 ? "LOCKED" : ageSec < 60 ? "DRIFT" : "OBSCURED";
+    updateTile(tiles.track, trackText, trackLevel);
+
+    // PASS WINDOW tile: how close to local point
+    let passText = "IDLE";
+    let passLevel = "low";
+    if (distLocal < 800) {
+      passText = "LOCAL";
+      passLevel = "high";
+    } else if (distLocal < 2000) {
+      passText = "REGION";
+      passLevel = "ok";
+    }
+    updateTile(tiles.pass, passText, passLevel);
+
+    // DRAG tile: simple heuristic from altitude
+    let dragText = "LOW";
+    let dragLevel = "ok";
+    if (altitude < 410) {
+      dragText = "HIGH";
+      dragLevel = "high";
+    } else if (altitude < 420) {
+      dragText = "MED";
+      dragLevel = "warn";
+    }
+    updateTile(tiles.drag, dragText, dragLevel);
+
+    // MOTION tile: mix of change in alt/vel over time
+    const motionScore = dt > 0 ? (dAlt + dVel / 200) / dt : 0;
+    let motionText = "STEADY";
+    let motionLevel = "low";
+    if (motionScore > 1.0) {
+      motionText = "AGITATED";
+      motionLevel = "high";
+    } else if (motionScore > 0.3) {
+      motionText = "SHIFTING";
+      motionLevel = "warn";
+    }
+    updateTile(tiles.motion, motionText, motionLevel);
   });
+
+  // --- Animation loop for radar -------------------------------------------
 
   scheduler.registerAnimation((ts) => {
     const t = ts / 1000;
@@ -50,8 +194,9 @@ export function initOrbitalPanel({ eventBus, stateStore, scheduler }) {
 
     sweep.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
 
-    // map altitude to orbital radius (visual only)
-    const altNorm = Math.max(0, Math.min(lastIss.altitude / 600, 1)); // 0–600 km
+    const altNorm = lastIss
+      ? Math.max(0, Math.min(lastIss.altitude / 600, 1))
+      : 0.7;
     const radius = 30 + altNorm * 20;
 
     const objAngleRad = (t * 0.35) % (Math.PI * 2);
