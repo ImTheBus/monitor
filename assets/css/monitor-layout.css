@@ -4,6 +4,11 @@
   --monitor-grid-gap: 0.75rem;
 }
 
+/* Make the whole page exactly one viewport high */
+html {
+  height: 100%;
+}
+
 *,
 *::before,
 *::after {
@@ -12,17 +17,20 @@
 
 body.monitor-root {
   margin: 0;
-  min-height: 100vh;
+  height: 100vh;          /* hard lock to viewport */
   background: radial-gradient(circle at top, #050a10 0, #000000 60%);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Mono", monospace;
+  overflow: hidden;        /* prevent any vertical growth */
 }
 
 #monitor-frame {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100%;            /* fill body */
   padding: 0.75rem;
 }
+
+/* HEADER */
 
 #monitor-header {
   display: grid;
@@ -31,6 +39,7 @@ body.monitor-root {
   column-gap: 0.75rem;
   row-gap: 0.35rem;
   margin-bottom: 0.75rem;
+  flex: 0 0 auto;
 }
 
 .brand {
@@ -87,8 +96,8 @@ body.monitor-root {
 /* MAIN GRID */
 
 #monitor-grid {
-  flex: 1;
-  min-height: 0; /* critical: prevent content from forcing grid taller */
+  flex: 1 1 auto;
+  min-height: 0; /* allow grid to shrink inside frame */
   display: grid;
   gap: var(--monitor-grid-gap);
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -108,7 +117,7 @@ body.monitor-root {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* critical: allow panel to shrink within grid track */
+  min-height: 0; /* prevent vertical growth inside grid cell */
 }
 
 .panel-title {
@@ -118,7 +127,6 @@ body.monitor-root {
   margin-bottom: 0.25rem;
 }
 
-/* generic inner area fills remaining height */
 .panel-inner {
   flex: 1;
   min-height: 0;
@@ -152,6 +160,7 @@ body.monitor-root {
 /* FOOTER */
 
 #monitor-footer {
+  flex: 0 0 auto;
   display: flex;
   justify-content: space-between;
   margin-top: 0.75rem;
