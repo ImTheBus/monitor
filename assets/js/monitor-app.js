@@ -8,6 +8,8 @@ import { createGlitchEngine } from "./core/glitchEngine.js";
 import { createTextEngine } from "./core/textEngine.js";
 import { initRealityPanel } from "./panels/panel-realityBand.js";
 import { initLogPanel } from "./panels/panel-logBand.js";
+import { initOrbitalPanel } from "./panels/panel-orbitalBand.js";
+import { initSubstratePanel } from "./panels/panel-substrateBand.js";
 import { monitorConfig } from "./monitor-config.js";
 
 const eventBus = createEventBus();
@@ -43,7 +45,6 @@ eventBus.subscribe("ui:toggleAbout", () => {
   const next = !aboutMode;
   stateStore.setState({ aboutMode: next });
 
-  // simple phase 1 behavior: show about text in reality panel overlay
   const panel = document.getElementById("panel-reality");
   if (!panel) return;
   const overlay = panel.querySelector(".panel-overlay-about");
@@ -52,7 +53,7 @@ eventBus.subscribe("ui:toggleAbout", () => {
   if (next) {
     overlay.classList.add("panel-overlay-visible");
     overlay.innerHTML =
-      "<strong>Reality band</strong><br/>Monitoring surface level disturbances, lattice noise and local operator interference.";
+      "<strong>Reality band</strong><br/>Monitoring surface-level disturbances, lattice noise and local operator interference.";
   } else {
     overlay.classList.remove("panel-overlay-visible");
   }
@@ -70,7 +71,8 @@ eventBus.subscribe("ui:toggleSources", () => {
     if (!overlay) return;
     if (next) {
       overlay.classList.add("panel-overlay-visible");
-      overlay.textContent = "Sources: synthesis of terrestrial, orbital and substrate inputs (simulation phase).";
+      overlay.textContent =
+        "Sources: synthesis of terrestrial, orbital and substrate inputs (simulation phase).";
     } else {
       overlay.classList.remove("panel-overlay-visible");
     }
@@ -123,6 +125,8 @@ eventBus.subscribe("mouse:click", () => {
 
 // init panels
 initRealityPanel({ eventBus, stateStore, scheduler });
+initOrbitalPanel({ eventBus, stateStore, scheduler });
+initSubstratePanel({ eventBus, stateStore, scheduler });
 initLogPanel({ eventBus, stateStore, scheduler });
 
 // start animation loop
