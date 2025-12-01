@@ -26,16 +26,39 @@
   max-width: 260px;
   max-height: 260px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--clr-base) 30%, transparent);
+  border: 1px solid color-mix(in srgb, var(--clr-base) 25%, transparent);
   background:
     radial-gradient(circle at center, rgba(0, 0, 0, 0.1) 0, transparent 60%),
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.8) 55%, #020506 100%);
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.9) 55%, #020506 100%);
   left: 32%; /* bias slightly left to create room for console */
   top: 50%;
   transform: translate(-50%, -50%);
   overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.9),
+    0 0 18px rgba(0, 0, 0, 0.9);
 }
 
+/* Bevelled / patterned frame around radar */
+.orbit-radar-frame {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.9) 100%),
+    repeating-conic-gradient(
+      from 0deg,
+      color-mix(in srgb, var(--clr-dim) 40%, transparent) 0deg,
+      color-mix(in srgb, var(--clr-dim) 40%, transparent) 3deg,
+      transparent 3deg,
+      transparent 8deg
+    );
+  mask-image: radial-gradient(circle, transparent 70%, #000 100%);
+  opacity: 0.75;
+  pointer-events: none;
+}
+
+/* crosshair lines */
 .orbit-radar::before,
 .orbit-radar::after {
   content: "";
@@ -57,6 +80,7 @@
   transform: translate(-50%, -50%) rotate(90deg);
 }
 
+/* sweep */
 .orbit-sweep {
   position: absolute;
   left: 50%;
@@ -71,8 +95,19 @@
     transparent 100%
   );
   box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 70%, transparent);
+  transition: box-shadow 0.12s ease-out, background 0.12s ease-out;
 }
 
+.orbit-sweep-hit {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--clr-danger) 85%, transparent) 0%,
+    transparent 100%
+  );
+  box-shadow: 0 0 14px color-mix(in srgb, var(--clr-danger) 55%, transparent);
+}
+
+/* radar object and dots */
 .orbit-object {
   position: absolute;
   width: 8px;
@@ -83,7 +118,52 @@
   transform: translate(-50%, -50%);
 }
 
-/* Footline telemetry */
+.orbit-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--clr-soft) 0, #000 90%);
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.orbit-dot-hit {
+  background: radial-gradient(circle, var(--clr-base) 0, #000 90%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 60%, transparent);
+}
+
+/* center ripple */
+.orbit-radar-ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--clr-accent) 70%, transparent);
+  transform: translate(-50%, -50%) scale(0.2);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.orbit-radar-ripple-active {
+  animation: orbit-radar-ripple-pulse 0.35s ease-out 0s 1;
+}
+
+@keyframes orbit-radar-ripple-pulse {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.8);
+  }
+}
+
+/* Footline telemetry (bottom-left) */
 .orbit-info {
   position: absolute;
   left: 0.75rem;
@@ -95,12 +175,47 @@
   opacity: 0.85;
 }
 
+/* Corner readouts */
+.orbit-corner {
+  position: absolute;
+  font-size: 0.55rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  display: flex;
+  gap: 0.3rem;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.orbit-corner-label {
+  opacity: 0.7;
+}
+
+.orbit-corner-value {
+  color: color-mix(in srgb, var(--clr-base) 80%, #9bf5ff 20%);
+}
+
+.orbit-corner-tl {
+  top: 0.35rem;
+  left: 0.75rem;
+}
+
+.orbit-corner-tr {
+  top: 0.35rem;
+  right: 0.75rem;
+}
+
+.orbit-corner-br {
+  bottom: 0.35rem;
+  right: 0.75rem;
+}
+
 /* Side console wrapper */
 .orbit-console {
   position: absolute;
-  top: 0.6rem;
+  top: 1.1rem;
   right: 0.6rem;
-  bottom: 0.6rem;
+  bottom: 1.0rem;
   width: 40%;
   max-width: 260px;
   display: flex;
