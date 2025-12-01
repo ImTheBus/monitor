@@ -84,16 +84,21 @@ body.monitor-root {
   white-space: nowrap;
 }
 
+/* MAIN GRID */
+
 #monitor-grid {
   flex: 1;
+  min-height: 0; /* critical: prevent content from forcing grid taller */
   display: grid;
   gap: var(--monitor-grid-gap);
-  grid-template-columns: 2fr 2fr 2fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: 2fr 1fr;
   grid-template-areas:
     "reality orbit substrate"
     "log    log   log";
 }
+
+/* PANELS */
 
 .panel {
   position: relative;
@@ -101,6 +106,9 @@ body.monitor-root {
   border-radius: 8px;
   padding: 0.5rem 0.5rem 0.35rem;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* critical: allow panel to shrink within grid track */
 }
 
 .panel-title {
@@ -110,9 +118,11 @@ body.monitor-root {
   margin-bottom: 0.25rem;
 }
 
+/* generic inner area fills remaining height */
 .panel-inner {
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  height: calc(100% - 1rem);
 }
 
 .panel-reality {
@@ -139,6 +149,8 @@ body.monitor-root {
   transition: opacity 0.25s ease-out;
 }
 
+/* FOOTER */
+
 #monitor-footer {
   display: flex;
   justify-content: space-between;
@@ -146,6 +158,8 @@ body.monitor-root {
   font-size: 0.7rem;
   opacity: 0.85;
 }
+
+/* RESPONSIVE */
 
 @media (max-width: 900px) {
   #monitor-grid {
