@@ -148,9 +148,8 @@
 .log-entries {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column; /* oldest at top, newest at bottom */
+  overflow-y: auto;   /* scroll inside the log area */
+  display: block;     /* simple block container, no flex gymnastics */
 }
 
 .log-entry {
