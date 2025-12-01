@@ -10,7 +10,7 @@ export function initLogPanel({ eventBus }) {
   container.classList.add("log-entries");
   inner.appendChild(container);
 
-  const maxEntries = 50;
+  const maxEntries = 30;
 
   function addEntry(text) {
     const entry = document.createElement("div");
