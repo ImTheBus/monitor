@@ -21,11 +21,14 @@ export function initLogPanel({ eventBus }) {
     // remove is-new after a short delay
     setTimeout(() => entry.classList.remove("is-new"), 800);
 
-    // trim
+    // trim oldest entries
     const children = Array.from(container.children);
     if (children.length > maxEntries) {
       container.removeChild(children[0]);
     }
+
+    // keep view pinned to the newest entries
+    container.scrollTop = container.scrollHeight;
   }
 
   eventBus.subscribe("log:newEvent", (text) => {
