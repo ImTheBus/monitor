@@ -1,0 +1,91 @@
+body.monitor-root {
+  --clr-base: #7dffb0;
+  --clr-soft: #b6ffd5;
+  --clr-dim: #3e9b65;
+  --clr-danger: #ff4f6d;
+  --clr-accent: #6fe8ff;
+  color: var(--clr-soft);
+}
+
+/* Theme 0 - green */
+body.monitor-root.theme-0 {
+  --clr-base: #7dffb0;
+  --clr-soft: #b6ffd5;
+  --clr-dim: #3e9b65;
+  --clr-danger: #ff4f6d;
+  --clr-accent: #6fe8ff;
+}
+
+/* Theme 1 - amber */
+body.monitor-root.theme-1 {
+  --clr-base: #ffd66b;
+  --clr-soft: #ffe4a3;
+  --clr-dim: #c79533;
+  --clr-danger: #ff5a3e;
+  --clr-accent: #ffc77e;
+}
+
+/* Theme 2 - cyan */
+body.monitor-root.theme-2 {
+  --clr-base: #7df0ff;
+  --clr-soft: #c4f6ff;
+  --clr-dim: #3aa0b1;
+  --clr-danger: #ff4f9b;
+  --clr-accent: #7dffcf;
+}
+
+/* Theme 3 - magenta occult */
+body.monitor-root.theme-3 {
+  --clr-base: #ff73da;
+  --clr-soft: #ffc4f0;
+  --clr-dim: #c03ea0;
+  --clr-danger: #ff3559;
+  --clr-accent: #7dffcf;
+}
+
+.panel {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--clr-base) 20%, transparent),
+    0 0 20px color-mix(in srgb, var(--clr-base) 10%, transparent);
+}
+
+.panel-title {
+  color: var(--clr-dim);
+}
+
+.status-strip,
+#monitor-footer {
+  color: color-mix(in srgb, var(--clr-soft) 85%, #4bffb4 15%);
+}
+
+.control-light {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--clr-base) 30%, transparent),
+    0 0 6px color-mix(in srgb, var(--clr-base) 30%, transparent);
+  color: var(--clr-soft);
+}
+
+.control-light::before {
+  background: radial-gradient(circle, var(--clr-base) 0, #031d12 70%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 70%, transparent);
+}
+
+.control-light.is-active::before {
+  box-shadow:
+    0 0 16px color-mix(in srgb, var(--clr-accent) 90%, transparent);
+}
+
+/* simple CRT style overlay hook */
+body.monitor-root::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.04) 1px,
+      transparent 1px
+    );
+  background-size: 100% 2px;
+  mix-blend-mode: soft-light;
+  opacity: 0.12;
+}
