@@ -18,7 +18,7 @@ export function initLogPanel({ eventBus }) {
     entry.textContent = text;
     container.appendChild(entry);
 
-    // remove is-new after a short delay
+    // remove highlight after a short delay
     setTimeout(() => entry.classList.remove("is-new"), 800);
 
     // trim oldest entries
@@ -27,7 +27,7 @@ export function initLogPanel({ eventBus }) {
       container.removeChild(children[0]);
     }
 
-    // keep view pinned to the newest entries
+    // keep view pinned to newest entries
     container.scrollTop = container.scrollHeight;
   }
 
