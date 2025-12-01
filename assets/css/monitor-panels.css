@@ -95,20 +95,90 @@
   opacity: 0.85;
 }
 
-/* Side console to the right of the radar */
+/* Side console wrapper */
 .orbit-console {
   position: absolute;
   top: 0.6rem;
   right: 0.6rem;
   bottom: 0.6rem;
   width: 40%;
-  max-width: 240px;
+  max-width: 260px;
   display: flex;
   flex-direction: column;
   gap: 0.45rem;
 }
 
+/* 1) Indicator lights row */
+
+.orbit-lights-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.orbit-light {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.08rem;
+}
+
+.orbit-light-led {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow:
+    0 0 5px color-mix(in srgb, var(--clr-base) 40%, transparent),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.9);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--clr-base) 85%, transparent) 0,
+    #020408 70%
+  );
+  animation: orbit-light-pulse 3.6s ease-in-out infinite;
+}
+
+.orbit-light:nth-child(3n + 1) .orbit-light-led {
+  animation-duration: 3.1s;
+}
+.orbit-light:nth-child(3n + 2) .orbit-light-led {
+  animation-duration: 4.0s;
+}
+.orbit-light:nth-child(3n + 3) .orbit-light-led {
+  animation-duration: 5.0s;
+}
+
+.orbit-light-label {
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  opacity: 0.9;
+}
+
+@keyframes orbit-light-pulse {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 2) Anomaly tiles grid (4 tiles, 2x2) */
+
+.orbit-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
 /* Individual anomaly tiles */
+
 .orbit-tile {
   position: relative;
   border-radius: 6px;
@@ -155,7 +225,7 @@
   opacity: 0.9;
 }
 
-/* basic sweep bars inside icon */
+/* simple twin bars inside icon */
 .orbit-icon::before {
   left: 3px;
   right: 9px;
@@ -202,6 +272,54 @@
 .orbit-tile[data-level="high"] {
   border-color: color-mix(in srgb, var(--clr-danger) 70%, transparent);
   box-shadow: 0 0 12px color-mix(in srgb, var(--clr-danger) 35%, transparent);
+}
+
+/* 3) Meters row (bottom of console) */
+
+.orbit-meters-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.orbit-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.orbit-meter-label {
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  opacity: 0.9;
+}
+
+.orbit-meter-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at left,
+    rgba(255, 255, 255, 0.08) 0,
+    rgba(0, 0, 0, 0.9) 70%
+  );
+  overflow: hidden;
+}
+
+.orbit-meter-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--fill, 0.4) * 100%);
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--clr-accent) 80%, transparent),
+    color-mix(in srgb, var(--clr-base) 90%, transparent)
+  );
+  box-shadow: 0 0 6px color-mix(in srgb, var(--clr-accent) 35%, transparent);
 }
 
 /* Substrate band - vertical bars */
