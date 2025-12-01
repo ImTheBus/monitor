@@ -1,4 +1,4 @@
-/* Panel specific styling */
+/* /monitor/assets/css/monitor-panels.css */
 
 /* Reality band grid will be filled by JS, but set baseline look */
 .panel-reality .panel-inner {
@@ -6,6 +6,122 @@
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   gap: 4px;
+}
+
+.reality-cell {
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 1px rgba(120, 255, 180, 0.12);
+}
+
+/* Orbital band - radar style */
+.panel-orbit .panel-inner {
+  position: relative;
+}
+
+.orbit-radar {
+  position: absolute;
+  inset: 8px;
+  margin: auto;
+  max-width: 260px;
+  max-height: 260px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--clr-base) 30%, transparent);
+  background:
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.1) 0, transparent 60%),
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.8) 55%, #020506 100%);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+}
+
+.orbit-radar::before,
+.orbit-radar::after {
+  content: "";
+  position: absolute;
+  inset: 50%;
+  width: 2px;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    color-mix(in srgb, var(--clr-dim) 40%, transparent) 50%,
+    transparent 100%
+  );
+  opacity: 0.5;
+}
+
+.orbit-radar::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.orbit-sweep {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 50%;
+  height: 2px;
+  transform-origin: 0% 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--clr-accent) 80%, transparent) 0%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 70%, transparent);
+}
+
+.orbit-object {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--clr-accent) 0, #000 90%);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 80%, transparent);
+  transform: translate(-50%, -50%);
+}
+
+/* Substrate band - vertical bars */
+.panel-substrate .panel-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.substrate-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 8px 4px;
+}
+
+.substrate-bar {
+  --height-factor: 0.2;
+  flex: 1;
+  max-width: 16px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--clr-dim) 40%, transparent),
+    color-mix(in srgb, var(--clr-base) 70%, transparent)
+  );
+  height: calc(10% + var(--height-factor) * 80%);
+  box-shadow:
+    0 0 10px color-mix(in srgb, var(--clr-base) 25%, transparent),
+    0 0 2px #000;
+  opacity: 0.9;
+}
+
+.substrate-bar:nth-child(3n) {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--clr-dim) 40%, transparent),
+    color-mix(in srgb, var(--clr-accent) 75%, transparent)
+  );
 }
 
 /* Log panel */
@@ -46,7 +162,11 @@
 .panel-overlay-about {
   font-size: 0.7rem;
   padding: 0.5rem;
-  background: radial-gradient(circle at top, rgba(0, 0, 0, 0.75) 0, rgba(0, 0, 0, 0.95) 60%);
+  background: radial-gradient(
+    circle at top,
+    rgba(0, 0, 0, 0.75) 0,
+    rgba(0, 0, 0, 0.95) 60%
+  );
   border-radius: 6px;
   border: 1px solid color-mix(in srgb, var(--clr-accent) 30%, transparent);
   color: var(--clr-soft);
@@ -55,7 +175,11 @@
 .panel-overlay-sources {
   font-size: 0.65rem;
   padding: 0.4rem;
-  background: radial-gradient(circle at bottom, rgba(0, 0, 0, 0.85) 0, rgba(0, 0, 0, 0.98) 60%);
+  background: radial-gradient(
+    circle at bottom,
+    rgba(0, 0, 0, 0.85) 0,
+    rgba(0, 0, 0, 0.98) 60%
+  );
   border-radius: 6px;
   border: 1px dashed color-mix(in srgb, var(--clr-dim) 40%, transparent);
   color: color-mix(in srgb, var(--clr-soft) 70%, #9ad5ff 30%);
