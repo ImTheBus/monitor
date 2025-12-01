@@ -6,10 +6,15 @@ import { initMouseTracker } from "./core/mouseTracker.js";
 import { initUiControls } from "./core/uiControls.js";
 import { createGlitchEngine } from "./core/glitchEngine.js";
 import { createTextEngine } from "./core/textEngine.js";
+
 import { initRealityPanel } from "./panels/panel-realityBand.js";
 import { initLogPanel } from "./panels/panel-logBand.js";
 import { initOrbitalPanel } from "./panels/panel-orbitalBand.js";
 import { initSubstratePanel } from "./panels/panel-substrateBand.js";
+
+import { initIssData } from "./data/data-iss.js";
+import { initEarthquakeData } from "./data/data-earthquakes.js";
+
 import { monitorConfig } from "./monitor-config.js";
 
 const eventBus = createEventBus();
@@ -121,6 +126,19 @@ eventBus.subscribe("mouse:click", () => {
     eventBus.publish("log:newEvent", entry);
     glitchEngine.globalJitter(100);
   }
+});
+
+// real data modules
+initIssData({
+  eventBus,
+  scheduler,
+  intervalMs: monitorConfig.pollIntervals.issMs
+});
+
+initEarthquakeData({
+  eventBus,
+  scheduler,
+  intervalMs: monitorConfig.pollIntervals.quakesMs
 });
 
 // init panels
