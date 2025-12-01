@@ -28,9 +28,9 @@
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--clr-base) 25%, transparent);
   background:
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.1) 0, transparent 60%),
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.9) 55%, #020506 100%);
-  left: 32%; /* bias slightly left to create room for console */
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.12) 0, transparent 62%),
+    radial-gradient(circle at center, rgba(0, 0, 0, 0.92) 58%, #020506 100%);
+  left: 32%;
   top: 50%;
   transform: translate(-50%, -50%);
   overflow: hidden;
@@ -139,40 +139,58 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--clr-accent) 70%, transparent);
-  transform: translate(-50%, -50%) scale(0.2);
+  border: 1px solid color-mix(in srgb, var(--clr-accent) 75%, transparent);
+  transform: translate(-50%, -50%) scale(0.15);
   opacity: 0;
   pointer-events: none;
 }
 
 .orbit-radar-ripple-active {
-  animation: orbit-radar-ripple-pulse 0.35s ease-out 0s 1;
+  animation: orbit-radar-ripple-pulse 0.4s ease-out 0s 1;
 }
 
 @keyframes orbit-radar-ripple-pulse {
   0% {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(0.15);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.8);
+    transform: translate(-50%, -50%) scale(3.0);
   }
 }
 
-/* Footline telemetry (bottom-left) */
+/* Info block (bottom-left) */
 .orbit-info {
   position: absolute;
   left: 0.75rem;
   bottom: 0.5rem;
-  font-size: 0.65rem;
-  letter-spacing: 0.08em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.02rem;
+}
+
+.orbit-info-line {
+  font-size: 0.62rem;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--clr-soft) 70%, #7df0ff 30%);
   opacity: 0.85;
+}
+
+.orbit-info-primary {
+  margin-bottom: 0.08rem;
+}
+
+.orbit-info-hot {
+  color: color-mix(in srgb, var(--clr-danger) 80%, #ffffff 20%);
+}
+
+.orbit-info-cold {
+  color: color-mix(in srgb, #7df0ff 80%, var(--clr-soft) 20%);
 }
 
 /* Corner readouts */
@@ -210,12 +228,92 @@
   right: 0.75rem;
 }
 
-/* Side console wrapper */
+/* Meters block (top-left) */
+
+.orbit-meters-block {
+  position: absolute;
+  top: 1.15rem;
+  left: 0.75rem;
+  width: 40%;
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.16rem;
+}
+
+.orbit-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.orbit-meter-label {
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  opacity: 0.9;
+}
+
+.orbit-meter-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at left,
+    rgba(255, 255, 255, 0.06) 0,
+    rgba(0, 0, 0, 0.95) 70%
+  );
+  overflow: hidden;
+}
+
+.orbit-meter-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: calc(var(--fill, 0.4) * 100%);
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--clr-accent) 80%, transparent),
+    color-mix(in srgb, var(--clr-base) 90%, transparent)
+  );
+  box-shadow: 0 0 6px color-mix(in srgb, var(--clr-accent) 35%, transparent);
+}
+
+/* meter colour states */
+.orbit-meter[data-level="low"] .orbit-meter-fill {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, #6fd8ff 80%, transparent),
+    color-mix(in srgb, var(--clr-base) 80%, transparent)
+  );
+  box-shadow: 0 0 6px color-mix(in srgb, #6fd8ff 40%, transparent);
+}
+
+.orbit-meter[data-level="mid"] .orbit-meter-fill {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--clr-accent) 80%, transparent),
+    color-mix(in srgb, var(--clr-base) 90%, transparent)
+  );
+}
+
+.orbit-meter[data-level="high"] .orbit-meter-fill {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--clr-danger) 85%, transparent),
+    color-mix(in srgb, var(--clr-base) 70%, transparent)
+  );
+  box-shadow: 0 0 7px color-mix(in srgb, var(--clr-danger) 45%, transparent);
+}
+
+/* Side console wrapper (top-right) */
 .orbit-console {
   position: absolute;
   top: 1.1rem;
   right: 0.6rem;
-  bottom: 1.0rem;
+  bottom: 3.2rem;
   width: 40%;
   max-width: 260px;
   display: flex;
@@ -259,10 +357,10 @@
   animation-duration: 3.1s;
 }
 .orbit-light:nth-child(3n + 2) .orbit-light-led {
-  animation-duration: 4.0s;
+  animation-duration: 4s;
 }
 .orbit-light:nth-child(3n + 3) .orbit-light-led {
-  animation-duration: 5.0s;
+  animation-duration: 5s;
 }
 
 .orbit-light-label {
@@ -389,52 +487,30 @@
   box-shadow: 0 0 12px color-mix(in srgb, var(--clr-danger) 35%, transparent);
 }
 
-/* 3) Meters row (bottom of console) */
+/* Bottom-right alert grid */
 
-.orbit-meters-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.orbit-meter {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-}
-
-.orbit-meter-label {
-  font-size: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  opacity: 0.9;
-}
-
-.orbit-meter-bar {
-  position: relative;
-  height: 4px;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle at left,
-    rgba(255, 255, 255, 0.08) 0,
-    rgba(0, 0, 0, 0.9) 70%
-  );
-  overflow: hidden;
-}
-
-.orbit-meter-fill {
+.orbit-alert-grid {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: calc(var(--fill, 0.4) * 100%);
-  border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--clr-accent) 80%, transparent),
-    color-mix(in srgb, var(--clr-base) 90%, transparent)
-  );
-  box-shadow: 0 0 6px color-mix(in srgb, var(--clr-accent) 35%, transparent);
+  bottom: 0.55rem;
+  right: 0.75rem;
+  width: 190px;
+  height: 72px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.orbit-alert-cell {
+  border-radius: 2px;
+  background: radial-gradient(circle, rgba(90, 140, 120, 0.9) 0, #020506 80%);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+  opacity: 0.4;
+}
+
+.orbit-alert-hot {
+  background: radial-gradient(circle, var(--clr-danger) 0, #040000 80%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--clr-danger) 60%, transparent);
 }
 
 /* Substrate band - vertical bars */
