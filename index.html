@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Rougvie Systems Monitor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="assets/css/monitor-layout.css" />
+  <link rel="stylesheet" href="assets/css/monitor-theme.css" />
+  <link rel="stylesheet" href="assets/css/monitor-panels.css" />
+</head>
+<body class="monitor-root theme-0">
+  <div id="monitor-frame">
+    <header id="monitor-header">
+      <div class="brand">ROUGVIE SYSTEMS MONITOR</div>
+
+      <div class="status-strip">
+        <span id="node-auth">Node: Rougvie</span>
+        <span id="cycle-counter">Cycle: 000000</span>
+        <span id="status-indicator">Status: INITIALISING</span>
+      </div>
+
+      <div id="control-strip" class="control-strip">
+        <button class="control-light" data-action="toggle-about" aria-label="About">
+          <span class="control-label">ABOUT</span>
+        </button>
+        <button class="control-light" data-action="cycle-theme" aria-label="Cycle theme">
+          <span class="control-label">THEME</span>
+        </button>
+        <button class="control-light" data-action="toggle-sources" aria-label="Data sources">
+          <span class="control-label">SOURCES</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="monitor-grid">
+      <section id="panel-reality" class="panel panel-reality">
+        <div class="panel-title">REALITY BAND</div>
+        <div class="panel-inner"></div>
+        <div class="panel-overlay panel-overlay-about"></div>
+        <div class="panel-overlay panel-overlay-sources"></div>
+      </section>
+
+      <section id="panel-orbit" class="panel panel-orbit">
+        <div class="panel-title">ORBITAL BAND</div>
+        <div class="panel-inner"></div>
+        <div class="panel-overlay panel-overlay-about"></div>
+        <div class="panel-overlay panel-overlay-sources"></div>
+      </section>
+
+      <section id="panel-substrate" class="panel panel-substrate">
+        <div class="panel-title">SUBSTRATE BAND</div>
+        <div class="panel-inner"></div>
+        <div class="panel-overlay panel-overlay-about"></div>
+        <div class="panel-overlay panel-overlay-sources"></div>
+      </section>
+
+      <section id="panel-log" class="panel panel-log">
+        <div class="panel-title">EVENT TRACE</div>
+        <div class="panel-inner"></div>
+      </section>
+    </main>
+
+    <footer id="monitor-footer">
+      <span id="footer-mode">Mode: CALM</span>
+      <span id="footer-noise">Noise: 0.00</span>
+      <span id="footer-time"></span>
+    </footer>
+  </div>
+
+  <script type="module" src="assets/js/monitor-app.js"></script>
+</body>
+</html>
