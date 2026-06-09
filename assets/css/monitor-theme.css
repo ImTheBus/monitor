@@ -1,91 +1,72 @@
+/* ======================================================================
+   PHOSPHOR PALETTES
+   Four CRT phosphor "tubes". Cycle with the PHOSPHOR control.
+   --clr-base   primary phosphor (readouts, glow)
+   --clr-soft   bright text on phosphor
+   --clr-dim    recessed / label phosphor
+   --clr-accent secondary phosphor (highlights, prime panel)
+   --clr-danger anomaly / alert
+   ====================================================================== */
+
+/* default = theme-0 */
 body.monitor-root {
-  --clr-base: #7dffb0;
-  --clr-soft: #b6ffd5;
-  --clr-dim: #3e9b65;
-  --clr-danger: #ff4f6d;
-  --clr-accent: #6fe8ff;
-  color: var(--clr-soft);
+  --clr-base: #54f2a6;
+  --clr-soft: #d6ffe9;
+  --clr-dim: #2f8b62;
+  --clr-accent: #58e6ff;
+  --clr-danger: #ff5a52;
 }
 
-/* Theme 0 - green */
+/* Theme 0 — P1 GREEN (Nostromo terminal green) */
 body.monitor-root.theme-0 {
-  --clr-base: #7dffb0;
-  --clr-soft: #b6ffd5;
-  --clr-dim: #3e9b65;
-  --clr-danger: #ff4f6d;
-  --clr-accent: #6fe8ff;
+  --clr-base: #54f2a6;
+  --clr-soft: #d6ffe9;
+  --clr-dim: #2f8b62;
+  --clr-accent: #58e6ff;
+  --clr-danger: #ff5a52;
 }
 
-/* Theme 1 - amber */
+/* Theme 1 — P3 AMBER (Blade Runner amber CRT) */
 body.monitor-root.theme-1 {
-  --clr-base: #ffd66b;
-  --clr-soft: #ffe4a3;
-  --clr-dim: #c79533;
-  --clr-danger: #ff5a3e;
-  --clr-accent: #ffc77e;
+  --clr-base: #ffb340;
+  --clr-soft: #ffe6b8;
+  --clr-dim: #b3742a;
+  --clr-accent: #ff7a3c;
+  --clr-danger: #ff3b30;
 }
 
-/* Theme 2 - cyan */
+/* Theme 2 — TEAL ICE (deep-space cold console) */
 body.monitor-root.theme-2 {
-  --clr-base: #7df0ff;
-  --clr-soft: #c4f6ff;
-  --clr-dim: #3aa0b1;
-  --clr-danger: #ff4f9b;
-  --clr-accent: #7dffcf;
+  --clr-base: #4fe3e8;
+  --clr-soft: #c7fbff;
+  --clr-dim: #2a8e93;
+  --clr-accent: #7d9bff;
+  --clr-danger: #ff5a8a;
 }
 
-/* Theme 3 - magenta occult */
+/* Theme 3 — HAZARD RED (lockdown / hostile) */
 body.monitor-root.theme-3 {
-  --clr-base: #ff73da;
-  --clr-soft: #ffc4f0;
-  --clr-dim: #c03ea0;
-  --clr-danger: #ff3559;
-  --clr-accent: #7dffcf;
+  --clr-base: #ff6450;
+  --clr-soft: #ffd2c4;
+  --clr-dim: #a8392b;
+  --clr-accent: #ffb13c;
+  --clr-danger: #ff2d2d;
 }
 
-.panel {
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--clr-base) 20%, transparent),
-    0 0 20px color-mix(in srgb, var(--clr-base) 10%, transparent);
-}
+body.monitor-root { color: var(--clr-soft); }
 
-.panel-title {
-  color: var(--clr-dim);
-}
-
-.status-strip,
-#monitor-footer {
-  color: color-mix(in srgb, var(--clr-soft) 85%, #4bffb4 15%);
-}
-
+/* control-light phosphor dot */
 .control-light {
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--clr-base) 30%, transparent),
-    0 0 6px color-mix(in srgb, var(--clr-base) 30%, transparent);
-  color: var(--clr-soft);
+    0 0 0 1px color-mix(in srgb, var(--clr-base) 28%, transparent),
+    0 0 6px color-mix(in srgb, var(--clr-base) 18%, transparent);
 }
-
 .control-light::before {
-  background: radial-gradient(circle, var(--clr-base) 0, #031d12 70%);
+  background: radial-gradient(circle, var(--clr-base) 0, #021510 70%);
   box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 70%, transparent);
 }
-
 .control-light.is-active::before {
-  box-shadow:
-    0 0 16px color-mix(in srgb, var(--clr-accent) 90%, transparent);
+  background: radial-gradient(circle, var(--clr-accent) 0, #021510 75%);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--clr-accent) 90%, transparent);
 }
-
-/* simple CRT style overlay hook */
-body.monitor-root::after {
-  content: "";
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.04) 1px,
-      transparent 1px
-    );
-  background-size: 100% 2px;
-  mix-blend-mode: soft-light;
-  opacity: 0.12;
-}
+.control-light.is-active { color: var(--clr-base); }

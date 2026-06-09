@@ -1,4 +1,4 @@
-// /monitor/assets/js/panels/panel-logBand.js
+// EVENT TRACE — append-only scrolling log. Supports alert lines.
 export function initLogPanel({ eventBus }) {
   const root = document.getElementById("panel-log");
   if (!root) return;
@@ -10,29 +10,27 @@ export function initLogPanel({ eventBus }) {
   container.classList.add("log-entries");
   inner.appendChild(container);
 
-  const maxEntries = 50;
+  const maxEntries = 60;
 
-  function addEntry(text) {
+  function addEntry(text, isAlert = false) {
     const entry = document.createElement("div");
     entry.classList.add("log-entry", "is-new");
+    if (isAlert) entry.classList.add("is-alert");
     entry.textContent = text;
     container.appendChild(entry);
 
-    // remove highlight after a short delay
     setTimeout(() => entry.classList.remove("is-new"), 800);
 
-    // trim oldest entries
-    const children = Array.from(container.children);
-    if (children.length > maxEntries) {
-      container.removeChild(children[0]);
-    }
+    const children = container.children;
+    while (children.length > maxEntries) container.removeChild(children[0]);
 
-    // keep view pinned to newest entries
     container.scrollTop = container.scrollHeight;
   }
 
-  eventBus.subscribe("log:newEvent", (text) => {
-    if (!text) return;
-    addEntry(text);
+  // Accept either a plain string or { text, alert }
+  eventBus.subscribe("log:newEvent", (payload) => {
+    if (!payload) return;
+    if (typeof payload === "string") return addEntry(payload, false);
+    addEntry(payload.text, !!payload.alert);
   });
 }

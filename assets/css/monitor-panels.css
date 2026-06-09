@@ -1,623 +1,376 @@
-/* /monitor/assets/css/monitor-panels.css */
+/* ======================================================================
+   PANEL INTERNALS — ROUGVIE ORBITAL COMMAND
+   ====================================================================== */
 
-/* Reality band grid */
+/* ----------------------------------------------------------------------
+   SEISMIC LATTICE  (panel-reality)
+   A 4x4 lattice of phosphor cells driven by live USGS quake data,
+   with a magnitude readout overlay.
+   ---------------------------------------------------------------------- */
 .panel-reality .panel-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.seismic-grid {
+  flex: 1;
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 3px;
 }
-
 .reality-cell {
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow: 0 0 0 1px rgba(120, 255, 180, 0.12);
+  border-radius: 2px;
+  background: rgba(0,0,0,0.5);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-dim) 18%, transparent);
 }
-
-/* Orbital band - radar + side console */
-.panel-orbit .panel-inner {
-  position: relative;
+.seismic-readout {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--clr-soft) 65%, var(--clr-dim) 35%);
 }
+.seismic-readout b { color: var(--clr-base); font-weight: 500; }
+.seismic-readout .is-high b { color: var(--clr-danger); }
 
-/* Central radar */
+/* ----------------------------------------------------------------------
+   ORBITAL TRACK — the PRIME focal radar
+   ---------------------------------------------------------------------- */
+.panel-orbit .panel-inner { position: relative; }
+
 .orbit-radar {
   position: absolute;
   inset: 8px;
   margin: auto;
-  max-width: 260px;
-  max-height: 260px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--clr-base) 25%, transparent);
-  background:
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.12) 0, transparent 62%),
-    radial-gradient(circle at center, rgba(0, 0, 0, 0.92) 58%, #020506 100%);
-  left: 32%;
+  width: min(58%, 300px);
+  aspect-ratio: 1;
+  max-height: 92%;
+  left: 30%;
   top: 50%;
   transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--clr-base) 30%, transparent);
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--clr-base) 4%, transparent) 0, transparent 60%),
+    radial-gradient(circle at center, rgba(0,0,0,0.92) 56%, #020708 100%);
   overflow: hidden;
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.9),
-    0 0 18px rgba(0, 0, 0, 0.9);
+    0 0 0 1px rgba(0,0,0,0.9),
+    0 0 28px color-mix(in srgb, var(--clr-base) 14%, transparent),
+    inset 0 0 40px rgba(0,0,0,0.9);
 }
 
-/* Bevelled / patterned frame around radar */
+/* range rings */
 .orbit-radar-frame {
   position: absolute;
-  inset: 3px;
+  inset: 0;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.9) 100%),
-    repeating-conic-gradient(
-      from 0deg,
-      color-mix(in srgb, var(--clr-dim) 40%, transparent) 0deg,
-      color-mix(in srgb, var(--clr-dim) 40%, transparent) 3deg,
-      transparent 3deg,
-      transparent 8deg
-    );
-  mask-image: radial-gradient(circle, transparent 70%, #000 100%);
-  opacity: 0.75;
+    radial-gradient(circle, transparent 24%, color-mix(in srgb, var(--clr-dim) 22%, transparent) 24.4%, transparent 25%),
+    radial-gradient(circle, transparent 48%, color-mix(in srgb, var(--clr-dim) 22%, transparent) 48.4%, transparent 49%),
+    radial-gradient(circle, transparent 72%, color-mix(in srgb, var(--clr-dim) 22%, transparent) 72.4%, transparent 73%);
   pointer-events: none;
+  opacity: 0.85;
 }
-
-/* crosshair lines */
 .orbit-radar::before,
 .orbit-radar::after {
   content: "";
   position: absolute;
   inset: 50%;
-  width: 2px;
+  width: 1px;
   height: 100%;
   transform: translate(-50%, -50%);
-  background: linear-gradient(
-    to bottom,
+  background: linear-gradient(to bottom,
     transparent 0,
-    color-mix(in srgb, var(--clr-dim) 40%, transparent) 50%,
-    transparent 100%
-  );
+    color-mix(in srgb, var(--clr-dim) 36%, transparent) 50%,
+    transparent 100%);
   opacity: 0.5;
 }
+.orbit-radar::after { transform: translate(-50%, -50%) rotate(90deg); }
 
-.orbit-radar::after {
-  transform: translate(-50%, -50%) rotate(90deg);
-}
-
-/* sweep */
 .orbit-sweep {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 50%;
-  height: 2px;
+  left: 50%; top: 50%;
+  width: 50%; height: 2px;
   transform-origin: 0% 50%;
   transform: translate(-50%, -50%) rotate(0deg);
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--clr-accent) 80%, transparent) 0%,
-    transparent 100%
-  );
-  box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 70%, transparent);
-  transition: box-shadow 0.12s ease-out, background 0.12s ease-out;
+  background: linear-gradient(to right,
+    color-mix(in srgb, var(--clr-accent) 85%, transparent) 0%, transparent 100%);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--clr-accent) 70%, transparent);
 }
-
+/* trailing sweep wedge */
+.orbit-sweep::after {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  width: 100%; height: 90px;
+  transform: translateY(-50%);
+  transform-origin: 0 50%;
+  background: conic-gradient(from -14deg at 0 50%,
+    color-mix(in srgb, var(--clr-accent) 26%, transparent) 0deg,
+    transparent 14deg);
+  pointer-events: none;
+}
 .orbit-sweep-hit {
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--clr-danger) 85%, transparent) 0%,
-    transparent 100%
-  );
-  box-shadow: 0 0 14px color-mix(in srgb, var(--clr-danger) 55%, transparent);
+  background: linear-gradient(to right,
+    color-mix(in srgb, var(--clr-danger) 90%, transparent) 0%, transparent 100%);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--clr-danger) 60%, transparent);
 }
 
-/* radar object and dots */
 .orbit-object {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 9px; height: 9px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--clr-accent) 0, #000 90%);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 80%, transparent);
+  background: radial-gradient(circle, var(--clr-accent) 0, #000 85%);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--clr-accent) 85%, transparent);
   transform: translate(-50%, -50%);
 }
-
 .orbit-dot {
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 4px; height: 4px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--clr-soft) 0, #000 90%);
+  background: radial-gradient(circle, var(--clr-soft) 0, #000 85%);
   transform: translate(-50%, -50%);
   opacity: 0.4;
   pointer-events: none;
 }
-
 .orbit-dot-hit {
-  background: radial-gradient(circle, var(--clr-base) 0, #000 90%);
+  background: radial-gradient(circle, var(--clr-base) 0, #000 85%);
   box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 60%, transparent);
 }
 
-/* center ripple */
 .orbit-radar-ripple {
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 18px;
-  height: 18px;
+  left: 50%; top: 50%;
+  width: 18px; height: 18px;
   border-radius: 50%;
   border: 1px solid color-mix(in srgb, var(--clr-accent) 75%, transparent);
   transform: translate(-50%, -50%) scale(0.15);
   opacity: 0;
   pointer-events: none;
 }
-
-.orbit-radar-ripple-active {
-  animation: orbit-radar-ripple-pulse 0.4s ease-out 0s 1;
+.orbit-radar-ripple-active { animation: orbit-ripple 0.4s ease-out 1; }
+@keyframes orbit-ripple {
+  0%   { opacity: 0.85; transform: translate(-50%, -50%) scale(0.15); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(3); }
 }
 
-@keyframes orbit-radar-ripple-pulse {
-  0% {
-    opacity: 0.85;
-    transform: translate(-50%, -50%) scale(0.15);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(3.0);
-  }
-}
-
-/* Info block (bottom-left) */
+/* info / corners / meters / console — telemetry typography */
 .orbit-info {
   position: absolute;
-  left: 0.75rem;
-  bottom: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.02rem;
+  left: 0.7rem; bottom: 0.4rem;
+  display: flex; flex-direction: column; gap: 0.04rem;
 }
-
 .orbit-info-line {
-  font-size: 0.62rem;
-  letter-spacing: 0.07em;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--clr-soft) 70%, #7df0ff 30%);
-  opacity: 0.85;
+  color: color-mix(in srgb, var(--clr-soft) 68%, var(--clr-accent) 32%);
+  opacity: 0.86;
+  font-variant-numeric: tabular-nums;
 }
-
 .orbit-info-primary {
-  margin-bottom: 0.08rem;
+  margin-bottom: 0.1rem;
+  color: var(--clr-base);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 40%, transparent);
 }
+.orbit-info-hot  { color: color-mix(in srgb, var(--clr-danger) 80%, #fff 20%); }
+.orbit-info-cold { color: var(--clr-accent); }
 
-.orbit-info-hot {
-  color: color-mix(in srgb, var(--clr-danger) 80%, #ffffff 20%);
-}
-
-.orbit-info-cold {
-  color: color-mix(in srgb, #7df0ff 80%, var(--clr-soft) 20%);
-}
-
-/* Corner readouts */
 .orbit-corner {
   position: absolute;
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   text-transform: uppercase;
-  letter-spacing: 0.11em;
-  display: flex;
-  gap: 0.3rem;
+  letter-spacing: 0.12em;
+  display: flex; gap: 0.35rem;
   pointer-events: none;
   opacity: 0.9;
 }
-
-.orbit-corner-label {
-  opacity: 0.7;
-}
-
+.orbit-corner-label { opacity: 0.6; }
 .orbit-corner-value {
-  color: color-mix(in srgb, var(--clr-base) 80%, #9bf5ff 20%);
+  color: var(--clr-base);
+  font-variant-numeric: tabular-nums;
 }
-
-.orbit-corner-tl {
-  top: 0.35rem;
-  left: 0.75rem;
-}
-
-.orbit-corner-tr {
-  top: 0.35rem;
-  right: 0.75rem;
-}
-
-.orbit-corner-br {
-  bottom: 0.35rem;
-  right: 0.75rem;
-}
-
-/* Meters block (top-left) */
+.orbit-corner-tl { top: 0.3rem; left: 0.7rem; }
+.orbit-corner-tr { top: 0.3rem; right: 0.7rem; }
+.orbit-corner-br { bottom: 0.3rem; right: 0.7rem; }
 
 .orbit-meters-block {
   position: absolute;
-  top: 1.15rem;
-  left: 0.75rem;
-  width: 40%;
-  max-width: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.16rem;
+  top: 1.1rem; left: 0.7rem;
+  width: 38%; max-width: 240px;
+  display: flex; flex-direction: column; gap: 0.18rem;
 }
-
-.orbit-meter {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-}
-
+.orbit-meter { display: flex; flex-direction: column; gap: 0.06rem; }
 .orbit-meter-label {
-  font-size: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  opacity: 0.9;
+  font-size: 0.48rem; text-transform: uppercase;
+  letter-spacing: 0.1em; opacity: 0.85;
 }
-
 .orbit-meter-bar {
-  position: relative;
-  height: 4px;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle at left,
-    rgba(255, 255, 255, 0.06) 0,
-    rgba(0, 0, 0, 0.95) 70%
-  );
+  position: relative; height: 4px; border-radius: 999px;
+  background: rgba(0,0,0,0.85);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-dim) 22%, transparent);
   overflow: hidden;
 }
-
 .orbit-meter-fill {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
+  position: absolute; left: 0; top: 0; bottom: 0;
   width: calc(var(--fill, 0.4) * 100%);
   border-radius: 999px;
-  background: linear-gradient(
-    to right,
+  background: linear-gradient(to right,
     color-mix(in srgb, var(--clr-accent) 80%, transparent),
-    color-mix(in srgb, var(--clr-base) 90%, transparent)
-  );
-  box-shadow: 0 0 6px color-mix(in srgb, var(--clr-accent) 35%, transparent);
+    color-mix(in srgb, var(--clr-base) 90%, transparent));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--clr-accent) 30%, transparent);
 }
-
-/* meter colour states */
-.orbit-meter[data-level="low"] .orbit-meter-fill {
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, #6fd8ff 80%, transparent),
-    color-mix(in srgb, var(--clr-base) 80%, transparent)
-  );
-  box-shadow: 0 0 6px color-mix(in srgb, #6fd8ff 40%, transparent);
+.orbit-meter[data-level="low"]  .orbit-meter-fill {
+  background: linear-gradient(to right, color-mix(in srgb, var(--clr-accent) 70%, transparent), color-mix(in srgb, var(--clr-base) 70%, transparent));
 }
-
-.orbit-meter[data-level="mid"] .orbit-meter-fill {
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--clr-accent) 80%, transparent),
-    color-mix(in srgb, var(--clr-base) 90%, transparent)
-  );
-}
-
 .orbit-meter[data-level="high"] .orbit-meter-fill {
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--clr-danger) 85%, transparent),
-    color-mix(in srgb, var(--clr-base) 70%, transparent)
-  );
+  background: linear-gradient(to right, color-mix(in srgb, var(--clr-danger) 85%, transparent), color-mix(in srgb, var(--clr-base) 65%, transparent));
   box-shadow: 0 0 7px color-mix(in srgb, var(--clr-danger) 45%, transparent);
 }
 
-/* Side console wrapper (top-right) */
 .orbit-console {
   position: absolute;
-  top: 1.1rem;
-  right: 0.6rem;
-  bottom: 3.2rem;
-  width: 40%;
-  max-width: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
+  top: 1.05rem; right: 0.5rem; bottom: 2.6rem;
+  width: 38%; max-width: 240px;
+  display: flex; flex-direction: column; gap: 0.45rem;
 }
-
-/* 1) Indicator lights row */
-
-.orbit-lights-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.25rem;
-}
-
-.orbit-light {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.08rem;
-}
-
+.orbit-lights-row { display: flex; justify-content: space-between; gap: 0.2rem; }
+.orbit-light { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
 .orbit-light-led {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  box-shadow:
-    0 0 5px color-mix(in srgb, var(--clr-base) 40%, transparent),
-    inset 0 0 0 1px rgba(0, 0, 0, 0.9);
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--clr-base) 85%, transparent) 0,
-    #020408 70%
-  );
+  width: 9px; height: 9px; border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--clr-base) 85%, transparent) 0, #020508 70%);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--clr-base) 40%, transparent), inset 0 0 0 1px rgba(0,0,0,0.9);
   animation: orbit-light-pulse 3.6s ease-in-out infinite;
 }
+.orbit-light:nth-child(3n+1) .orbit-light-led { animation-duration: 3.1s; }
+.orbit-light:nth-child(3n+2) .orbit-light-led { animation-duration: 4s; }
+.orbit-light:nth-child(3n+3) .orbit-light-led { animation-duration: 5s; }
+.orbit-light-label { font-size: 0.46rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.85; }
+@keyframes orbit-light-pulse { 0%,100% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } }
 
-.orbit-light:nth-child(3n + 1) .orbit-light-led {
-  animation-duration: 3.1s;
-}
-.orbit-light:nth-child(3n + 2) .orbit-light-led {
-  animation-duration: 4s;
-}
-.orbit-light:nth-child(3n + 3) .orbit-light-led {
-  animation-duration: 5s;
-}
-
-.orbit-light-label {
-  font-size: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  opacity: 0.9;
-}
-
-@keyframes orbit-light-pulse {
-  0%,
-  100% {
-    opacity: 0.75;
-    transform: scale(0.95);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* 2) Anomaly tiles grid (4 tiles, 2x2) */
-
-.orbit-tiles-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.35rem;
-}
-
-/* Individual anomaly tiles */
-
+.orbit-tiles-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 0.35rem; }
 .orbit-tile {
-  position: relative;
-  border-radius: 6px;
-  padding: 0.25rem 0.35rem 0.25rem 0.4rem;
-  border: 1px solid color-mix(in srgb, var(--clr-dim) 40%, transparent);
-  background: radial-gradient(
-    circle at top left,
-    rgba(255, 255, 255, 0.04) 0,
-    rgba(0, 0, 0, 0.9) 55%
-  );
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7);
+  position: relative; border-radius: 4px;
+  padding: 0.26rem 0.36rem;
+  border: 1px solid color-mix(in srgb, var(--clr-dim) 36%, transparent);
+  background: radial-gradient(circle at top left, color-mix(in srgb, var(--clr-base) 4%, transparent) 0, rgba(0,0,0,0.9) 55%);
 }
-
-.orbit-tile-header {
-  font-size: 0.55rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  opacity: 0.9;
-  margin-bottom: 0.1rem;
-}
-
-.orbit-tile-body {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.35rem;
-}
-
+.orbit-tile-header { font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.85; margin-bottom: 0.12rem; }
+.orbit-tile-body { display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; }
 .orbit-icon {
-  position: relative;
-  width: 18px;
-  height: 12px;
-  border-radius: 999px;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-dim) 60%, transparent);
-  overflow: hidden;
+  position: relative; width: 16px; height: 11px; border-radius: 999px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--clr-dim) 55%, transparent); overflow: hidden;
 }
+.orbit-icon::before, .orbit-icon::after { content: ""; position: absolute; inset: 3px 2px; border-radius: 999px; opacity: 0.9; }
+.orbit-icon::before { left: 3px; right: 8px; background: linear-gradient(to top, color-mix(in srgb, var(--clr-soft) 40%, transparent), color-mix(in srgb, var(--clr-base) 85%, transparent)); }
+.orbit-icon::after  { right: 3px; left: 8px;  background: linear-gradient(to top, color-mix(in srgb, var(--clr-soft) 60%, transparent), color-mix(in srgb, var(--clr-accent) 90%, transparent)); }
+.orbit-tile-value { font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
-.orbit-icon::before,
-.orbit-icon::after {
-  content: "";
-  position: absolute;
-  inset: 3px 2px;
-  border-radius: 999px;
-  opacity: 0.9;
-}
-
-/* simple twin bars inside icon */
-.orbit-icon::before {
-  left: 3px;
-  right: 9px;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--clr-soft) 40%, transparent),
-    color-mix(in srgb, var(--clr-base) 85%, transparent)
-  );
-}
-
-.orbit-icon::after {
-  right: 3px;
-  left: 9px;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--clr-soft) 60%, transparent),
-    color-mix(in srgb, var(--clr-accent) 90%, transparent)
-  );
-}
-
-.orbit-tile-value {
-  font-size: 0.65rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-/* Levels change border and glow; JS sets data-level */
-.orbit-tile[data-level="low"] {
-  border-color: color-mix(in srgb, var(--clr-dim) 35%, transparent);
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
-}
-
-.orbit-tile[data-level="ok"] {
-  border-color: color-mix(in srgb, var(--clr-base) 55%, transparent);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 25%, transparent);
-}
-
-.orbit-tile[data-level="warn"] {
-  border-color: color-mix(in srgb, var(--clr-accent) 60%, transparent);
-  box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 30%, transparent);
-}
-
-.orbit-tile[data-level="high"] {
-  border-color: color-mix(in srgb, var(--clr-danger) 70%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--clr-danger) 35%, transparent);
-}
-
-/* Bottom-right alert grid */
+.orbit-tile[data-level="low"]  { border-color: color-mix(in srgb, var(--clr-dim) 32%, transparent); }
+.orbit-tile[data-level="ok"]   { border-color: color-mix(in srgb, var(--clr-base) 55%, transparent); box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 22%, transparent); }
+.orbit-tile[data-level="warn"] { border-color: color-mix(in srgb, var(--clr-accent) 60%, transparent); box-shadow: 0 0 10px color-mix(in srgb, var(--clr-accent) 28%, transparent); }
+.orbit-tile[data-level="high"] { border-color: color-mix(in srgb, var(--clr-danger) 70%, transparent); box-shadow: 0 0 12px color-mix(in srgb, var(--clr-danger) 32%, transparent); }
 
 .orbit-alert-grid {
-  position: absolute;
-  bottom: 0.55rem;
-  right: 0.75rem;
-  width: 190px;
-  height: 72px;
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, 1fr));
-  gap: 2px;
+  position: absolute; bottom: 0.5rem; right: 0.7rem;
+  width: 38%; max-width: 190px; height: 64px;
+  display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); grid-template-rows: repeat(4, minmax(0,1fr)); gap: 2px;
 }
-
 .orbit-alert-cell {
   border-radius: 2px;
-  background: radial-gradient(circle, rgba(90, 140, 120, 0.9) 0, #020506 80%);
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+  background: radial-gradient(circle, color-mix(in srgb, var(--clr-dim) 55%, transparent) 0, #020506 80%);
   opacity: 0.4;
 }
-
 .orbit-alert-hot {
   background: radial-gradient(circle, var(--clr-danger) 0, #040000 80%);
   box-shadow: 0 0 8px color-mix(in srgb, var(--clr-danger) 60%, transparent);
 }
 
-/* Substrate band - vertical bars */
+/* ----------------------------------------------------------------------
+   SUBSTRATE SPECTRUM  (panel-substrate)
+   Mirrored spectrum-analyser bars + a baseline.
+   ---------------------------------------------------------------------- */
 .panel-substrate .panel-inner {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  display: flex; flex-direction: column; justify-content: flex-end;
 }
-
 .substrate-bars {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 4px;
-  width: 100%;
-  height: 100%;
-  padding: 8px 4px;
+  display: flex; align-items: flex-end; justify-content: center;
+  gap: 3px; width: 100%; height: 100%; padding: 6px 4px 0;
 }
-
 .substrate-bar {
   --height-factor: 0.2;
-  flex: 1;
-  max-width: 16px;
-  border-radius: 999px 999px 0 0;
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--clr-dim) 40%, transparent),
-    color-mix(in srgb, var(--clr-base) 70%, transparent)
-  );
-  height: calc(10% + var(--height-factor) * 80%);
-  box-shadow:
-    0 0 10px color-mix(in srgb, var(--clr-base) 25%, transparent),
-    0 0 2px #000;
-  opacity: 0.9;
+  flex: 1; max-width: 14px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--clr-dim) 50%, transparent) 0%,
+    color-mix(in srgb, var(--clr-base) 80%, transparent) 70%,
+    var(--clr-soft) 100%);
+  height: calc(8% + var(--height-factor) * 84%);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 22%, transparent);
+  opacity: 0.92;
 }
-
 .substrate-bar:nth-child(3n) {
-  background: linear-gradient(
-    to top,
-    color-mix(in srgb, var(--clr-dim) 40%, transparent),
-    color-mix(in srgb, var(--clr-accent) 75%, transparent)
-  );
+  background: linear-gradient(to top,
+    color-mix(in srgb, var(--clr-dim) 50%, transparent),
+    color-mix(in srgb, var(--clr-accent) 80%, transparent));
+}
+.substrate-baseline {
+  flex: 0 0 auto;
+  height: 1px;
+  background: color-mix(in srgb, var(--clr-base) 30%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--clr-base) 30%, transparent);
 }
 
-/* Log panel */
+/* ----------------------------------------------------------------------
+   EVENT TRACE LOG  (panel-log)
+   ---------------------------------------------------------------------- */
 .panel-log .panel-inner {
-  font-size: 0.72rem;
-  line-height: 1.3;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  font-size: clamp(0.6rem, 1vw, 0.72rem);
+  line-height: 1.35;
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden;
 }
-
-.log-entries {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: block;
-}
-
+.log-entries { flex: 1; min-height: 0; overflow-y: auto; display: block; scrollbar-width: thin; }
 .log-entry {
-  opacity: 0.86;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  padding: 0.05rem 0;
-  color: color-mix(in srgb, var(--clr-soft) 80%, #7effc1 20%);
+  opacity: 0.82;
+  white-space: nowrap; text-overflow: ellipsis; overflow: hidden;
+  padding: 0.04rem 0;
+  color: color-mix(in srgb, var(--clr-soft) 75%, var(--clr-base) 25%);
+  font-variant-numeric: tabular-nums;
 }
+.log-entry::before { content: "› "; color: var(--clr-dim); }
+.log-entry.is-new { color: var(--clr-accent); opacity: 1; }
+.log-entry.is-alert { color: var(--clr-danger); }
+.log-entry:hover { opacity: 1; color: var(--clr-base); }
 
-.log-entry.is-new {
-  color: var(--clr-accent);
-}
-
-.log-entry:hover {
-  opacity: 1;
-  color: var(--clr-base);
-}
-
-/* About and sources overlays */
+/* ----------------------------------------------------------------------
+   OVERLAYS  (about / sources)
+   ---------------------------------------------------------------------- */
 .panel-overlay-about {
-  font-size: 0.7rem;
-  padding: 0.5rem;
-  background: radial-gradient(
-    circle at top,
-    rgba(0, 0, 0, 0.75) 0,
-    rgba(0, 0, 0, 0.95) 60%
-  );
-  border-radius: 6px;
+  font-size: 0.7rem; line-height: 1.45; padding: 0.7rem;
+  background: radial-gradient(circle at top, rgba(2,8,8,0.92) 0, rgba(0,0,0,0.97) 60%);
+  border-radius: 5px;
   border: 1px solid color-mix(in srgb, var(--clr-accent) 30%, transparent);
   color: var(--clr-soft);
+  overflow-y: auto;
 }
-
+.panel-overlay-about strong { color: var(--clr-base); }
 .panel-overlay-sources {
-  font-size: 0.65rem;
-  padding: 0.4rem;
-  background: radial-gradient(
-    circle at bottom,
-    rgba(0, 0, 0, 0.85) 0,
-    rgba(0, 0, 0, 0.98) 60%
-  );
-  border-radius: 6px;
-  border: 1px dashed color-mix(in srgb, var(--clr-dim) 40%, transparent);
-  color: color-mix(in srgb, var(--clr-soft) 70%, #9ad5ff 30%);
+  font-size: 0.62rem; line-height: 1.4; padding: 0.5rem;
+  background: radial-gradient(circle at bottom, rgba(0,0,0,0.9) 0, rgba(0,0,0,0.98) 60%);
+  border-radius: 5px;
+  border: 1px dashed color-mix(in srgb, var(--clr-dim) 45%, transparent);
+  color: color-mix(in srgb, var(--clr-soft) 70%, var(--clr-accent) 30%);
+  overflow-y: auto;
 }
+.panel-overlay-visible { opacity: 1; }
 
-/* Overlay visible state, toggled by JS */
-.panel-overlay-visible {
-  opacity: 1;
+/* On narrow stacked layout the orbit internals need to recenter */
+@media (max-width: 940px) {
+  .orbit-radar { left: 50%; width: min(70%, 240px); }
+  .orbit-meters-block, .orbit-console { display: none; }
 }

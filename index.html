@@ -2,68 +2,126 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Rougvie Systems Monitor</title>
+  <title>ROUGVIE // ORBITAL COMMAND</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Rougvie Orbital Command — an ambient command-monitor art piece. Live planetary telemetry rendered as a retro-futurist control room." />
+  <meta name="color-scheme" content="dark" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Orbitron:wght@500;700;900&display=swap" />
   <link rel="stylesheet" href="assets/css/monitor-layout.css" />
   <link rel="stylesheet" href="assets/css/monitor-theme.css" />
   <link rel="stylesheet" href="assets/css/monitor-panels.css" />
 </head>
 <body class="monitor-root theme-0">
-  <div id="monitor-frame">
-    <header id="monitor-header">
-      <div class="brand">ROUGVIE SYSTEMS MONITOR</div>
 
-      <div class="status-strip">
-        <span id="node-auth">Node: Rougvie</span>
-        <span id="cycle-counter">Cycle: 000000</span>
-        <span id="status-indicator">Status: INITIALISING</span>
+  <!-- Atmosphere layers: drawn behind everything, pointer-inert -->
+  <div class="crt-stack" aria-hidden="true">
+    <div class="crt-glow"></div>
+    <div class="crt-scanlines"></div>
+    <div class="crt-grille"></div>
+    <div class="crt-flicker"></div>
+    <div class="crt-vignette"></div>
+    <div class="crt-bezel"></div>
+  </div>
+
+  <!-- Boot sequence overlay -->
+  <div id="boot-screen" aria-hidden="true">
+    <pre id="boot-log"></pre>
+  </div>
+
+  <div id="monitor-frame" class="depth-stage">
+
+    <header id="monitor-header">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <span class="brand-name">ROUGVIE</span>
+        <span class="brand-sub">ORBITAL COMMAND</span>
+      </div>
+
+      <div class="status-strip" role="status" aria-live="off">
+        <span id="node-auth">NODE&nbsp;<b>ROUGVIE-1</b></span>
+        <span id="cycle-counter">CYCLE&nbsp;<b>000000</b></span>
+        <span id="status-indicator" data-state="init">STATUS&nbsp;<b>INITIALISING</b></span>
       </div>
 
       <div id="control-strip" class="control-strip">
-        <button class="control-light" data-action="toggle-about" aria-label="About">
+        <button class="control-light" data-action="toggle-about" aria-label="About this monitor">
           <span class="control-label">ABOUT</span>
         </button>
-        <button class="control-light" data-action="cycle-theme" aria-label="Cycle theme">
-          <span class="control-label">THEME</span>
+        <button class="control-light" data-action="cycle-theme" aria-label="Cycle phosphor palette">
+          <span class="control-label">PHOSPHOR</span>
         </button>
-        <button class="control-light" data-action="toggle-sources" aria-label="Data sources">
+        <button class="control-light" data-action="toggle-sources" aria-label="Show data sources">
           <span class="control-label">SOURCES</span>
         </button>
       </div>
     </header>
 
-    <main id="monitor-grid">
-      <section id="panel-reality" class="panel panel-reality">
-        <div class="panel-title">REALITY BAND</div>
+    <main id="monitor-grid" aria-label="Command telemetry panels">
+
+      <!-- LEFT — recedes -->
+      <section id="panel-reality" class="panel panel-reality depth-far" aria-label="Seismic band">
+        <div class="panel-chrome">
+          <span class="panel-tab">A1</span>
+          <span class="panel-title">SEISMIC LATTICE</span>
+          <span class="panel-led" data-feed="quakes"></span>
+        </div>
         <div class="panel-inner"></div>
         <div class="panel-overlay panel-overlay-about"></div>
         <div class="panel-overlay panel-overlay-sources"></div>
+        <div class="panel-corner panel-corner-tl"></div>
+        <div class="panel-corner panel-corner-br"></div>
       </section>
 
-      <section id="panel-orbit" class="panel panel-orbit">
-        <div class="panel-title">ORBITAL BAND</div>
+      <!-- CENTRE — the focal foreground panel -->
+      <section id="panel-orbit" class="panel panel-orbit depth-prime" aria-label="Primary orbital tracking">
+        <div class="panel-chrome">
+          <span class="panel-tab">PRIME</span>
+          <span class="panel-title">ORBITAL TRACK // OBJECT 25544</span>
+          <span class="panel-led" data-feed="iss"></span>
+        </div>
         <div class="panel-inner"></div>
         <div class="panel-overlay panel-overlay-about"></div>
         <div class="panel-overlay panel-overlay-sources"></div>
+        <div class="panel-corner panel-corner-tl"></div>
+        <div class="panel-corner panel-corner-tr"></div>
+        <div class="panel-corner panel-corner-bl"></div>
+        <div class="panel-corner panel-corner-br"></div>
       </section>
 
-      <section id="panel-substrate" class="panel panel-substrate">
-        <div class="panel-title">SUBSTRATE BAND</div>
+      <!-- RIGHT — recedes -->
+      <section id="panel-substrate" class="panel panel-substrate depth-far" aria-label="Substrate spectrum band">
+        <div class="panel-chrome">
+          <span class="panel-tab">A2</span>
+          <span class="panel-title">SUBSTRATE SPECTRUM</span>
+          <span class="panel-led" data-feed="local"></span>
+        </div>
         <div class="panel-inner"></div>
         <div class="panel-overlay panel-overlay-about"></div>
         <div class="panel-overlay panel-overlay-sources"></div>
+        <div class="panel-corner panel-corner-tr"></div>
+        <div class="panel-corner panel-corner-bl"></div>
       </section>
 
-      <section id="panel-log" class="panel panel-log">
-        <div class="panel-title">EVENT TRACE</div>
+      <!-- BOTTOM — event trace, recedes lowest -->
+      <section id="panel-log" class="panel panel-log depth-mid" aria-label="Event trace log">
+        <div class="panel-chrome">
+          <span class="panel-tab">LOG</span>
+          <span class="panel-title">EVENT TRACE</span>
+          <span class="panel-led" data-feed="trace"></span>
+        </div>
         <div class="panel-inner"></div>
       </section>
+
     </main>
 
     <footer id="monitor-footer">
-      <span id="footer-mode">Mode: CALM</span>
-      <span id="footer-noise">Noise: 0.00</span>
-      <span id="footer-time"></span>
+      <span id="footer-mode">MODE&nbsp;<b>CALM</b></span>
+      <span id="footer-noise">NOISE&nbsp;<b>0.00</b></span>
+      <span id="footer-feed">FEEDS&nbsp;<b>--</b></span>
+      <span id="footer-time">--:--:--</span>
+      <a id="footer-backlink" href="https://rougvie.com" rel="noopener">◆ rougvie.com</a>
     </footer>
   </div>
 
